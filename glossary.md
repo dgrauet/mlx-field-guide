@@ -4,6 +4,7 @@ Quick reference for all terms used in this guide. For full explanations, follow 
 
 | Term | Definition | Deep Dive |
 |------|-----------|-----------|
+| Activation Function | A non-linear function applied after each layer's weight multiplication; without it, stacking layers provides no benefit over a single layer. Examples: ReLU, GELU, SiLU. | [Neural Networks](01-foundations/02-neural-networks.md) |
 | Attention | A mechanism where each element in a sequence computes a weighted sum over all other elements, where the weights are learned based on content relevance. | [Attention](01-foundations/06-attention.md) |
 | Attention Head | One of H parallel attention operations in multi-head attention, each with its own W_Q, W_K, W_V projection matrices. | [Attention](01-foundations/06-attention.md) |
 | Attention Score | The dot product of a query with a key, measuring relevance between two tokens; divided by sqrt(d_k) before softmax. | [Attention](01-foundations/06-attention.md) |
@@ -45,6 +46,7 @@ Quick reference for all terms used in this guide. For full explanations, follow 
 | Flash Attention | An IO-efficient attention algorithm (Dao et al., 2022) that tiles the attention computation to avoid writing the full seq-by-seq matrix to GPU memory. | [Attention](01-foundations/06-attention.md) |
 | Flow Matching | A training and sampling approach that learns straight-line paths from noise to data; the model predicts velocity instead of noise; used in Flux, SD3, LTX-Video. | [Diffusion](01-foundations/08-diffusion.md) |
 | Forward Pass | The computation of passing an input through all layers in sequence to produce an output; happens in both training and inference. | [Training vs. Inference](01-foundations/03-training-vs-inference.md) |
+| Forward Process | The training-time procedure of progressively adding Gaussian noise to clean data over T timesteps until it becomes pure noise; defined by a fixed mathematical formula, not learned. | [Diffusion](01-foundations/08-diffusion.md) |
 | FP16 (float16) | 16-bit floating point. 2 bytes per value. Reduced range (max ~65,000); higher precision near zero than bfloat16. Common in CUDA inference. | [Quantization](01-foundations/10-quantization.md) |
 | FP32 (float32) | 32-bit floating point. The standard precision for training. 4 bytes per value. Full range and precision, but expensive in memory. | [Quantization](01-foundations/10-quantization.md) |
 | GGUF | A file format from llama.cpp that packages model weights, tokenizer, and metadata into a single portable file. Not a quantization algorithm; embeds the quantization scheme in the filename (e.g., Q4_K_M). | [Quantization](01-foundations/10-quantization.md) |

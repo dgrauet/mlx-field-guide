@@ -437,8 +437,8 @@ TTS PERFORMANCE (1 minute of synthesized audio, approximate)
 
 ## See Also
 
-- [Transformers](../01-foundations/06-transformers.md) -- Whisper, Bark, MusicGen, and most TTS models use transformer architectures; the encoder-decoder pattern (Whisper) and decoder-only pattern (Bark, MusicGen) are the two dominant structures
-- [Tokenization](../01-foundations/10-tokenization.md) -- audio models tokenize sound just as LLMs tokenize text; EnCodec's residual vector quantization (RVQ) is the audio equivalent of BPE tokenization
+- [Transformers](../01-foundations/05-transformers.md) -- Whisper, Bark, MusicGen, and most TTS models use transformer architectures; the encoder-decoder pattern (Whisper) and decoder-only pattern (Bark, MusicGen) are the two dominant structures
+- [Tokenization](../01-foundations/09-tokenization.md) -- audio models tokenize sound just as LLMs tokenize text; EnCodec's residual vector quantization (RVQ) is the audio equivalent of BPE tokenization
 - [LLMs](03-llms.md) -- MusicGen and Bark generate audio tokens using GPT-style autoregressive decoding; the same sequence modeling machinery that powers LLMs is used for audio generation
 - [Diffusion](../01-foundations/08-diffusion.md) -- Stable Audio uses latent diffusion for music generation; the same diffusion process that generates images applied to a mel spectrogram latent
 - [Frameworks](02-frameworks.md) -- PyTorch is the CUDA audio ecosystem's foundation; mlx-audio is the MLX equivalent; the conversion pattern (PyTorch -> numpy -> MLX) applies to audio models exactly as it does to image models

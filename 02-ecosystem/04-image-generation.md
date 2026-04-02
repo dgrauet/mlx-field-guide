@@ -425,9 +425,9 @@ IMAGE GENERATION PERFORMANCE (text-to-image, approximate)
 ## See Also
 
 - [Diffusion](../01-foundations/08-diffusion.md) -- the mathematical basis of diffusion models; noise schedules, score matching, DDPM/DDIM; essential for understanding why sampling algorithm choice matters
-- [Latent Space](../01-foundations/09-latent-space.md) -- explains VAEs and why diffusion happens in latent space rather than pixel space; the 8x spatial compression that makes U-Net computation tractable
-- [Attention](../01-foundations/07-attention.md) -- cross-attention is how text conditioning works in SD1.5/SDXL; self-attention is the backbone of Flux's DiT architecture
-- [Transformers](../01-foundations/06-transformers.md) -- Flux uses a Diffusion Transformer (DiT) rather than a U-Net; understanding transformers helps with understanding the architecture shift
+- [Latent Space](../01-foundations/07-latent-space.md) -- explains VAEs and why diffusion happens in latent space rather than pixel space; the 8x spatial compression that makes U-Net computation tractable
+- [Attention](../01-foundations/06-attention.md) -- cross-attention is how text conditioning works in SD1.5/SDXL; self-attention is the backbone of Flux's DiT architecture
+- [Transformers](../01-foundations/05-transformers.md) -- Flux uses a Diffusion Transformer (DiT) rather than a U-Net; understanding transformers helps with understanding the architecture shift
 - [Quantization](../01-foundations/10-quantization.md) -- mflux uses 4-bit quantization to fit Flux in practical memory; explains the quality/memory trade-offs
 - [Frameworks](02-frameworks.md) -- PyTorch/diffusers vs MLX; the pattern for porting diffusers pipelines to MLX
 - [Video Generation](05-video-generation.md) -- the adjacent domain where image generation techniques extend to temporal sequences; where the MLX gap is widest

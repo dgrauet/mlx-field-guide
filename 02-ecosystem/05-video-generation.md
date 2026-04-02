@@ -652,9 +652,9 @@ VIDEO GENERATION PERFORMANCE (approximate, 2025)
 ## See Also
 
 - [Diffusion](../01-foundations/08-diffusion.md) -- the mathematical foundation; noise schedules and denoising underlie all video models; flow matching (used in LTX-Video and Wan) is a variant of the diffusion framework
-- [Latent Space](../01-foundations/09-latent-space.md) -- all video models work in latent space; explains the VAE compression that makes per-frame generation tractable; temporal VAEs compress both space and time
-- [Transformers](../01-foundations/06-transformers.md) -- LTX-Video, CogVideoX, Wan, HunyuanVideo are all Diffusion Transformers (DiT); the transformer architecture is what replaced U-Nets for video generation
-- [Attention](../01-foundations/07-attention.md) -- temporal attention across frames is the core mechanism that makes video models coherent; explains why full 3D attention is expensive and how alternating spatial/temporal attention trades quality for speed
+- [Latent Space](../01-foundations/07-latent-space.md) -- all video models work in latent space; explains the VAE compression that makes per-frame generation tractable; temporal VAEs compress both space and time
+- [Transformers](../01-foundations/05-transformers.md) -- LTX-Video, CogVideoX, Wan, HunyuanVideo are all Diffusion Transformers (DiT); the transformer architecture is what replaced U-Nets for video generation
+- [Attention](../01-foundations/06-attention.md) -- temporal attention across frames is the core mechanism that makes video models coherent; explains why full 3D attention is expensive and how alternating spatial/temporal attention trades quality for speed
 - [Quantization](../01-foundations/10-quantization.md) -- 4-bit quantization is what makes large video models (Wan-14B, HunyuanVideo) run on Apple Silicon; explains the quality/memory trade-off
 - [Image Generation](04-image-generation.md) -- the adjacent domain; video generation extends image techniques into the temporal dimension; mflux and mlx-examples are the image generation references
 - [Frameworks](02-frameworks.md) -- PyTorch/diffusers vs MLX; the pattern for porting diffusers video pipelines to MLX follows the same structure as image pipeline ports
