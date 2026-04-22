@@ -220,7 +220,7 @@ Apple Silicon comes in too many configurations (M1/M2/M3/M4, Pro/Max/Ultra, 8GB/
 
 ## See Also
 
-- [Porting Guide](02-porting-guide.md) -- the mechanics of converting a PyTorch/CUDA model to MLX; what to do after you have decided what to port
+- [Porting Guide](02-porting-guide.md) -- the mechanics of converting a PyTorch/CUDA model to MLX, including the "Common Port Failure Modes" reference you will return to repeatedly once debugging starts
 - [Open Opportunities](03-open-opportunities.md) -- specific gaps ranked by impact; what to work on if you don't already have a target
 - [Ecosystem Overview](../02-ecosystem/01-cuda-vs-mlx-overview.md) -- the gap analysis that identifies where MLX most needs work
 - [Tooling](../02-ecosystem/08-tooling.md) -- conversion scripts, profiling utilities, and debugging tools; the practical context for contributing new tooling

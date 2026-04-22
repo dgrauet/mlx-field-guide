@@ -783,18 +783,190 @@ print(f"float32 vs bfloat16 max diff: {max_diff:.5f}")
 
 ## Common Port Failure Modes
 
-A reference list of issues that break ports and how to diagnose them:
+The generic symptoms table (wrong shape, all zeros, slow) covers the obvious. The failures below are the ones that waste days. Each is from real port experience on diffusion, LLM, and 3D-generation models.
+
+### 1. QKV interleaving mismatch in attention
+
+**Symptom.** Layer parity on every layer *except* attention. Attention output diverges by orders of magnitude even though the weights loaded cleanly and the shapes match.
+
+**Cause.** PyTorch models pack the combined QKV projection in different layouts across codebases. Three patterns are common:
+
+```
+Layout A (interleaved per head):  [q0, k0, v0, q1, k1, v1, ..., qH, kH, vH]
+Layout B (grouped):               [q0, q1, ..., qH, k0, k1, ..., kH, v0, v1, ..., vH]
+Layout C (HuggingFace GPT-NeoX):  [q_head0_dim0, k_head0_dim0, v_head0_dim0, q_head0_dim1, ...]
+```
+
+If your MLX port assumes one layout and the weights are in another, the Q, K, and V tensors you compute with look numerically plausible (no NaNs, reasonable magnitudes) but are actually scrambled across heads.
+
+**Diagnosis.** Read the reference PyTorch source for the *exact reshape pattern* applied to the `qkv` weight. Look for lines like:
+
+```python
+# Layout A (interleaved per head)
+qkv = qkv.view(batch, seq, n_heads, 3, head_dim).transpose(...)
+# vs Layout B (grouped)
+qkv = qkv.view(batch, seq, 3, n_heads, head_dim).transpose(...)
+```
+
+The dimension order in `.view(...)` tells you the layout. Do not assume; read the code.
+
+**Fix.** Match the source layout exactly in your MLX implementation. If you need the other layout for a downstream op, do the re-interleaving *after* projection, not by changing how you slice the weight.
+
+**See also.** [Attention](../01-foundations/06-attention.md) -- the Q/K/V projection math.
+
+### 2. Silent default divergence
+
+**Symptom.** Port looks correct, no errors, outputs look plausible -- but they don't match the reference. No layer shows a large divergence; everything is slightly off.
+
+**Cause.** Your module's constructor has a default argument that differs from the source model's config. Classic examples:
+- `eps=1e-5` in your `LayerNorm` when the source uses `eps=1e-6`.
+- `bias=True` in your `Linear` when the source model has `bias=False`.
+- `rope_theta=10000` when the source uses `rope_theta=500000` (LLaMA 3).
+- `activation="gelu"` when the source uses `"silu"`.
+
+These defaults are usually invisible in a diff because the config file uses the source model's real values, and your port just... doesn't read them.
+
+**Diagnosis.** Print the effective config of your ported module and cross-check every field against the source model's `config.json`:
+
+```python
+print("Port config:", {k: getattr(my_model.config, k) for k in vars(my_model.config)})
+print("Source config:", json.load(open("source_config.json")))
+# Diff them manually. Every discrepancy is suspicious.
+```
+
+**Fix.** Never rely on constructor defaults for a port. Always thread every config field through from the source `config.json` to the MLX module. Treat "the default happens to match" as coincidence, not correctness.
+
+**Why this is worth a dedicated section.** On two separate ports (Hunyuan3D-2.1 and ERNIE-Image), this one class of bug cost more debugging time than any other single issue. It is also the easiest to miss on review -- the port "looks right."
+
+### 3. The `attention_head_dim` naming trap in `UNet2DConditionModel`
+
+**Symptom.** Port of a Stable Diffusion 1.x or 2.x UNet produces near-identical weight shapes but wrong attention output — textures come out neutral, cyan, or checkerboard after full generation. Weights load cleanly. Layer-level parity in isolation looks correct; only full-pipeline generation reveals the bug.
+
+**Cause.** In `diffusers.UNet2DConditionModel`, the config field `attention_head_dim` is **misnamed**: it is actually the number of heads per block, not the per-head dimension. The real per-head dimension is `channels // attention_head_dim`.
+
+Concrete example from SD 2.1's paint UNet:
+
+```python
+# UNet2DConditionModel config
+{
+    "block_out_channels": [320, 640, 1280, 1280],
+    "attention_head_dim": [5, 10, 20, 20]  # THESE ARE HEAD COUNTS, NOT PER-HEAD DIMS
+}
+
+# Actual geometry, per block:
+# Block 0: 5 heads  of dim 64   (channels 320 // heads 5   = 64)
+# Block 1: 10 heads of dim 64   (channels 640 // heads 10  = 64)
+# Block 2: 20 heads of dim 64   (channels 1280 // heads 20 = 64)
+# Block 3: 20 heads of dim 64
+```
+
+The reason this loads silently: the Q/K/V/O Linear weights have shape `(channels, channels)` regardless of how you partition them into heads. Only the reshape-for-attention step `x.reshape(B, L, heads, head_dim)` exposes the error, and only after the softmax scaling produces a different distribution.
+
+**Diagnosis.** When porting any `UNet2DConditionModel`, treat `attention_head_dim` as `num_heads`. Do not divide. Verify by comparing your MLX module's effective head count against the reference:
+
+```python
+from diffusers import UNet2DConditionModel
+ref = UNet2DConditionModel.from_config(cfg)
+print("heads per block:", [b.attentions[0].transformer_blocks[0].attn1.heads for b in ref.down_blocks if hasattr(b, "attentions")])
+# Compare against your port's configured head count per block.
+```
+
+**Fix.** In your MLX port, set `num_heads = config.attention_head_dim[i]` directly for each block, then derive `head_dim = block_out_channels[i] // num_heads`. In the Hunyuan3D-2.1 paint UNet port, fixing this inversion reduced a 0.21 max_abs per-UNet-pass error to 1e-5 against PyTorch.
+
+**Scope note.** This trap is specific to `UNet2DConditionModel` (SD 1.x / 2.x UNets, plus derivatives like the Hunyuan3D paint UNet). DiT-based models that use `diffusers.models.transformers.Transformer2DModel` — Stable Diffusion 3, Flux, many ControlNets-on-DiT — follow the natural naming convention: `inner_dim = num_attention_heads * attention_head_dim`, where `attention_head_dim` really is the per-head dimension. When porting from a DiT, do not apply this fix — you would invert a correct config.
+
+**See also.** [Attention](../01-foundations/06-attention.md).
+
+### 4. Layer parity does not imply end-to-end correctness
+
+**Symptom.** Every layer matches PyTorch to ~3e-6 in isolation. You declare the port done. First real generation produces a checkerboard pattern, cyan tint, gray slush, or garbage tokens.
+
+**Cause.** Small per-layer errors compound across the denoising chain (or generation loop). 3e-6 per layer, amplified over 50 diffusion steps and thousands of operations, becomes visible artifacts. Also: some bugs (wrong normalization scale, off-by-one positional encoding) do not show up in a single-step forward comparison but dominate after iteration.
+
+**Diagnosis.** Run a three-test noise-chain diagnostic before claiming a port is done:
+
+1. **Single-step parity.** Each layer matches PyTorch within 1e-5 (fp32) or 1e-2 (bf16). Table stakes.
+2. **Full-forward parity.** One full forward pass from noise to denoised latent matches PyTorch end-to-end within 1e-4 (fp32).
+3. **Multi-step parity.** Run 10 denoising steps; intermediate latents at steps 1, 5, 10 all match PyTorch within 1e-3. If step 1 matches but step 5 diverges, there is an iterative-error bug.
+
+Only after all three pass, run a full image/token generation and inspect.
+
+**Fix.** Varies by bug. Common culprits: missing forced-execution placement (lazy-eval accumulates precision issues), wrong scheduler sigma schedule, positional encoding drift across steps.
+
+**See also.** [Diffusion](../01-foundations/08-diffusion.md) -- why multi-step error matters for generative models specifically.
+
+### 5. Tekken-family tokenizer BOS not auto-prepended
+
+**Symptom.** Text encoder output diverges from HuggingFace `transformers` by ~100x starting at layer 2. Layer 1 matches; layer 2 onward drifts heavily.
+
+**Cause.** Pixtral / Mistral-family / Tekken-V3 tokenizers do not automatically prepend the `<s>` BOS token when called with `add_special_tokens=True`. HuggingFace `transformers` handles this internally via a different code path; tokenizers-only callers (including ports that call the raw tokenizer) do not.
+
+If your port tokenizes the prompt without manually prepending BOS, token position 0 is wrong, every token's positional encoding shifts by one, and the embedding layer produces a subtly different output that amplifies through the transformer.
+
+**Diagnosis.** Compare the tokenized prompt IDs byte-for-byte between your port and HuggingFace `transformers`:
+
+```python
+from transformers import AutoTokenizer
+hf_ids = AutoTokenizer.from_pretrained("mistralai/...").encode("hello")
+port_ids = my_tokenizer.encode("hello")
+assert hf_ids == port_ids, f"HF: {hf_ids}, port: {port_ids}"
+```
+
+If token 0 differs, BOS is the bug.
+
+**Fix.** In your port's `_tokenize` / equivalent, explicitly prepend the BOS token ID:
+
+```python
+def _tokenize(self, text: str) -> list[int]:
+    ids = self._raw_tokenize(text, add_special_tokens=True)
+    if self.needs_manual_bos:  # Tekken-family
+        ids = [self.bos_token_id] + ids
+    return ids
+```
+
+**See also.** [Tokenization](../01-foundations/09-tokenization.md).
+
+### 6. pip editable install shadowed by site-packages
+
+**Symptom.** You edit a file in a locally-checked-out library (installed via `pip install -e .`). Print statements don't appear. Fixes don't take effect. `__file__` of the imported module correctly points at your local checkout, yet the behavior is the old behavior.
+
+**Cause.** A stale non-editable install of the same package is present in site-packages and takes precedence over the editable install, even though `__file__` reports the local path. This happens when a package was installed two ways in the same environment (typically: `pip install <pkg>` followed later by `pip install -e .` without uninstalling).
+
+**Diagnosis.** First command to run when a fix does not appear to take effect:
+
+```bash
+pip show <package-name>
+```
+
+Look at the `Location:` field. If it points to `site-packages/` instead of your local checkout, the editable install is being shadowed.
+
+**Fix.**
+
+```bash
+pip uninstall <package-name> -y
+pip install -e /path/to/local/checkout
+```
+
+Re-run `pip show` to confirm the `Location:` now points at your local path.
+
+**Why this is in a porting guide.** Most MLX porting work involves modifying a local fork of an upstream library. This failure mode is environmental, not code, but it masquerades as a code bug and wastes more time than any other single non-code issue.
+
+---
+
+## Quick-Reference Symptom Table
+
+The sections above cover the deep failures. For fast lookup of simpler issues:
 
 | Symptom | Likely Cause | Fix |
-|---------|-------------|-----|
+|---------|--------------|-----|
 | `ValueError: wrong shape` on weight load | Key mapping correct but tensor needs transposing | Add `.T` or `mx.transpose` to the weight before loading |
 | Output is all zeros or NaN from layer 1 | Weight not loaded; model using random init | Check that `load_weights` was called and returned no errors |
-| Output diverges after N layers | Accumulating floating-point error; mismatched norm | Compare layer-by-layer; check LayerNorm eps values match |
+| Output diverges after N layers | Accumulating FP error; mismatched norm eps | Compare layer-by-layer; check LayerNorm eps values |
 | Correct results in float32, NaN in bfloat16 | Operation numerically unstable at lower precision | Add explicit float32 cast around the unstable op |
-| [Model](../glossary.md#model) runs slower than expected | Too many forced execution calls serializing GPU work | Consolidate them; see mx.eval placement section |
-| Memory grows unbounded during inference | Intermediate arrays not freed; too-large graph | Force execution at stage boundaries; check for Python list accumulation |
+| Model runs slower than expected | Too many forced execution calls serializing GPU work | Consolidate them; see forced-execution placement section |
+| Memory grows unbounded during inference | Intermediate arrays not freed; too-large graph | Force execution at stage boundaries; check Python list accumulation |
 | Conv2d produces wrong results | NCHW/NHWC layout mismatch | Transpose inputs before conv and outputs after |
-| Attention scores overflow | QK^T values too large before softmax | Check that scaling by `1/sqrt(head_dim)` is present |
+| Attention scores overflow | QK^T values too large before softmax | Check scaling by `1/sqrt(head_dim)` is present |
 | Custom CUDA extension import fails | Expected: on MLX you cannot import CUDA extensions | Replace with MLX primitives or Metal kernel |
 
 ---

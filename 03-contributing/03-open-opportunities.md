@@ -304,6 +304,7 @@ The best way to find what the community needs right now (not just what this page
 
 - [Where to Contribute](01-where-to-contribute.md) -- repositories, communities, and how to engage; the map of where to submit your work
 - [Porting Guide](02-porting-guide.md) -- the mechanics of CUDA-to-MLX conversion; what to do when you pick up a "Moderate" opportunity
+- [Porting Guide: Common Port Failure Modes](02-porting-guide.md#common-port-failure-modes) -- the failure patterns you will hit while working on any of the opportunities on this page
 - [CUDA vs MLX Overview](../02-ecosystem/01-cuda-vs-mlx-overview.md) -- the full gap analysis that this page distills into actionable opportunities
 - [Video Generation](../02-ecosystem/05-video-generation.md) -- the context for the LTX-Video and temporal attention opportunities
 - [Tooling](../02-ecosystem/08-tooling.md) -- the context for the profiling and quantization opportunities
