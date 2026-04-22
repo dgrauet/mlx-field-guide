@@ -437,6 +437,7 @@ TTS PERFORMANCE (1 minute of synthesized audio, approximate)
 
 ## See Also
 
+- [Serving & Deployment](09-serving-deployment.md) -- real-time audio serving considerations; streaming and latency constraints
 - [Transformers](../01-foundations/05-transformers.md) -- Whisper, Bark, MusicGen, and most TTS models use transformer architectures; the encoder-decoder pattern (Whisper) and decoder-only pattern (Bark, MusicGen) are the two dominant structures
 - [Tokenization](../01-foundations/09-tokenization.md) -- audio models tokenize sound just as LLMs tokenize text; EnCodec's residual vector quantization (RVQ) is the audio equivalent of BPE tokenization
 - [LLMs](03-llms.md) -- MusicGen and Bark generate audio tokens using GPT-style autoregressive decoding; the same sequence modeling machinery that powers LLMs is used for audio generation

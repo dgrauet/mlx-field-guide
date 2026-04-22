@@ -371,6 +371,7 @@ The key takeaway: **for 7B models, Apple Silicon is within 30-50% of an RTX 4090
 
 ## See Also
 
+- [Serving & Deployment](09-serving-deployment.md) -- production serving patterns for LLMs; how vLLM/TGI/mlx_lm.server compare in practice
 - [Transformers](../01-foundations/05-transformers.md) -- the architecture underlying every LLM on this page; attention mechanisms, positional encodings, KV cache
 - [Attention](../01-foundations/06-attention.md) -- deep dive on the attention operation; explains why Flash Attention matters and why long contexts are expensive
 - [Quantization](../01-foundations/10-quantization.md) -- essential for understanding why 4-bit models work, what NF4 is, and where quantization error accumulates

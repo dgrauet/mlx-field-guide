@@ -424,6 +424,7 @@ IMAGE GENERATION PERFORMANCE (text-to-image, approximate)
 
 ## See Also
 
+- [Serving & Deployment](09-serving-deployment.md) -- serving image models (mflux-server and peers); different request shape from LLM serving
 - [Diffusion](../01-foundations/08-diffusion.md) -- the mathematical basis of diffusion models; noise schedules, score matching, DDPM/DDIM; essential for understanding why sampling algorithm choice matters
 - [Latent Space](../01-foundations/07-latent-space.md) -- explains VAEs and why diffusion happens in latent space rather than pixel space; the 8x spatial compression that makes U-Net computation tractable
 - [Attention](../01-foundations/06-attention.md) -- cross-attention is how text conditioning works in SD1.5/SDXL; self-attention is the backbone of Flux's DiT architecture

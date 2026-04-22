@@ -35,6 +35,7 @@ Once you understand the foundations, explore the landscape:
 6. [Audio](02-ecosystem/06-audio.md) -- speech and music generation
 7. [Training & Fine-tuning](02-ecosystem/07-training-finetuning.md) -- LoRA, datasets, full fine-tune
 8. [Tooling](02-ecosystem/08-tooling.md) -- profilers, converters, quantizers
+9. [Serving & Deployment](02-ecosystem/09-serving-deployment.md) -- from laptop to production API
 
 ### Pillar 3: Contributing
 

@@ -16,6 +16,7 @@ Start with the overview, then explore domains that interest you:
 | 6 | [Audio](06-audio.md) | Mature | Emerging |
 | 7 | [Training & Fine-tuning](07-training-finetuning.md) | Mature | Limited |
 | 8 | [Tooling](08-tooling.md) | Mature | Growing |
+| 9 | [Serving & Deployment](09-serving-deployment.md) | Mature | Growing |
 
 ## Prerequisites
 
