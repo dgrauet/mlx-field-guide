@@ -1,6 +1,6 @@
 # Training vs Inference
 
-> **One-liner:** Training teaches a model by adjusting its weights based on examples; inference uses the trained model to make predictions.
+> **One-liner:** [Training](../glossary.md#training) teaches a model by adjusting its weights based on examples; inference uses the trained model to make predictions.
 
 ## The Intuition
 
@@ -30,7 +30,7 @@ You read through many examples (the training data). After each one, you check yo
               +--------------------------------------------------+
 ```
 
-**Inference is taking the exam.**
+**[Inference](../glossary.md#inference) is taking the exam.**
 
 You sit down, read the question, and produce your best answer using everything you studied. The exam doesn't change your understanding -- you don't update anything. You just apply what you already know.
 
@@ -49,7 +49,7 @@ You sit down, read the question, and produce your best answer using everything y
 
 Here is the critical context for understanding this field guide: **almost all MLX porting work is inference-only.**
 
-LTX-Video was trained on clusters of NVIDIA H100 GPUs -- hardware that costs hundreds of thousands of dollars and runs for weeks. Matrix-Game-mlx was trained the same way. When you port these models to MLX, you are not re-doing that training. You are taking the result of that training (a `.safetensors` weight file) and building a system to run inference on Apple Silicon.
+LTX-Video was trained on clusters of NVIDIA H100 GPUs -- hardware that costs hundreds of thousands of dollars and runs for weeks. [Matrix](../glossary.md#matrix)-Game-mlx was trained the same way. When you port these models to MLX, you are not re-doing that training. You are taking the result of that training (a `.safetensors` weight file) and building a system to run inference on Apple Silicon.
 
 The training already happened. It happened somewhere else, on different hardware, using different code. Your job is to run the forward pass efficiently on an M-series chip.
 
@@ -168,9 +168,9 @@ A tiny adjustment. Repeat millions of times and the weights gradually find value
 
 **Optimizers** are smarter versions of plain gradient descent. Instead of taking a fixed-size step, they track history and adapt their behavior:
 
-| Optimizer | What it does |
+| [Optimizer](../glossary.md#optimizer) | What it does |
 |-----------|-------------|
-| **SGD** (Stochastic Gradient Descent) | Plain gradient descent with optional momentum to smooth updates |
+| **SGD** (Stochastic [Gradient Descent](../glossary.md#gradient-descent)) | Plain gradient descent with optional momentum to smooth updates |
 | **Adam** | Tracks both the mean and variance of recent gradients; adapts the step size per weight; most commonly used |
 | **AdamW** | Adam with weight decay -- a regularization term that prevents weights from growing too large; standard for transformer training |
 
@@ -239,13 +239,13 @@ That's all. No loss, no backward pass, no optimizer step. The `torch.no_grad()` 
 | | Training | Inference |
 |---|---|---|
 | **What runs** | Forward pass + backward pass | Forward pass only |
-| **Weight updates** | Yes, after every batch | No |
+| **[Weight](../glossary.md#weight) updates** | Yes, after every batch | No |
 | **Gradients computed** | Yes | No |
 | **Loss function needed** | Yes | No |
 | **Labeled data needed** | Yes | No |
 | **Memory use** | High (stores gradients + activations for backprop) | Lower (weights + activations only) |
 | **Speed focus** | Throughput (samples/second over days) | Latency (time to produce one output) |
-| **Hardware** | Multi-GPU clusters; NVIDIA dominates | Single GPU or CPU; Apple Silicon viable |
+| **Hardware** | Multi-[GPU](../glossary.md#gpu) clusters; NVIDIA dominates | Single GPU or [CPU](../glossary.md#cpu); Apple Silicon viable |
 | **Duration** | Hours to weeks | Milliseconds to seconds |
 | **Typical hardware cost** | Very high | Much lower |
 
@@ -261,7 +261,7 @@ This simplifies things considerably. You don't need to understand how the LTX-Vi
 If your forward pass produces correct shapes but wrong values, the likely culprits are:
 
 1. **Incorrect weight loading** -- a weight from the file was placed into the wrong layer, or the keys don't match the architecture
-2. **Numerical precision differences** -- the original model used float16 and you loaded float32, or vice versa; small but accumulating precision differences between CUDA and Metal
+2. **Numerical precision differences** -- the original model used float16 and you loaded float32, or vice versa; small but accumulating precision differences between [CUDA](../glossary.md#cuda) and [Metal](../glossary.md#metal)
 3. **Missing or wrong data preprocessing** -- the input wasn't normalized the way the model expects
 4. **Transposed weights** -- some weight files store weights in a different orientation than the framework expects; loading without transposing silently produces wrong outputs
 
@@ -272,7 +272,7 @@ None of these require understanding backpropagation. They require understanding 
 In PyTorch, calling `model.eval()` before running inference does two important things:
 
 1. **Disables Dropout** -- Dropout randomly zeroes out activations during training (a regularization technique). During inference, you want all activations to pass through.
-2. **Disables BatchNorm updates** -- Batch Normalization tracks running statistics during training. During inference, it uses the saved statistics instead.
+2. **Disables BatchNorm updates** -- [Batch](../glossary.md#batch) [Normalization](../glossary.md#normalization) tracks running statistics during training. During inference, it uses the saved statistics instead.
 
 Forgetting `model.eval()` in PyTorch is a common bug: the model will produce different outputs every time you run it (due to random dropout) and may produce slightly wrong outputs (due to batch norm behavior).
 
@@ -330,17 +330,17 @@ If you do encounter training in an MLX context, it will most likely be fine-tuni
 |------|------------|
 | **Training** | The process of adjusting a model's weights based on labeled examples, using a loss function and gradient descent, to minimize prediction error |
 | **Inference** | Running a trained model on new inputs to produce predictions; weights stay fixed, no gradients are computed |
-| **Forward Pass** | The computation of passing an input through all layers in sequence to produce an output; happens in both training and inference |
+| **[Forward Pass](../glossary.md#forward-pass)** | The computation of passing an input through all layers in sequence to produce an output; happens in both training and inference |
 | **Backward Pass (Backpropagation)** | The computation of gradients by applying the chain rule backward through each layer; happens only during training |
-| **Loss Function** | A formula that measures how wrong the model's output is compared to the correct answer; produces a single scalar value (the loss) that training tries to minimize |
+| **[Loss Function](../glossary.md#loss-function)** | A formula that measures how wrong the model's output is compared to the correct answer; produces a single scalar value (the loss) that training tries to minimize |
 | **Gradient** | For a given weight, the gradient is the rate of change of the loss with respect to that weight -- how much the loss would change if the weight changed by a tiny amount |
 | **Gradient Descent** | The optimization algorithm that updates each weight in the direction that reduces the loss, scaled by the learning rate |
-| **Learning Rate** | A hyperparameter that controls how large a step to take when updating weights; too large causes instability, too small causes slow training |
+| **[Learning Rate](../glossary.md#learning-rate)** | A hyperparameter that controls how large a step to take when updating weights; too large causes instability, too small causes slow training |
 | **Optimizer** | An algorithm for computing weight updates from gradients; common optimizers (Adam, AdamW, SGD) use techniques like momentum and adaptive step sizes to converge faster |
-| **Epoch** | One complete pass through the entire training dataset |
+| **[Epoch](../glossary.md#epoch)** | One complete pass through the entire training dataset |
 | **Batch** | A subset of the training data processed together in a single forward+backward pass; batching is more computationally efficient than processing one example at a time |
-| **Overfitting** | When a model learns the training data so precisely that it performs well on training examples but poorly on new, unseen examples; a sign that the model has memorized rather than generalized |
-| **Checkpoint** | A saved snapshot of a model's weights at a particular point during training; loading a checkpoint is how pretrained models are distributed and how inference pipelines begin |
+| **[Overfitting](../glossary.md#overfitting)** | When a model learns the training data so precisely that it performs well on training examples but poorly on new, unseen examples; a sign that the model has memorized rather than generalized |
+| **[Checkpoint](../glossary.md#checkpoint)** | A saved snapshot of a model's weights at a particular point during training; loading a checkpoint is how pretrained models are distributed and how inference pipelines begin |
 
 
 ## Sources

@@ -4,7 +4,7 @@
 
 ## The Intuition
 
-You know from the Neural Networks page that a model is a sequence of layers, and from the GPU Computing page that those layers run in parallel on specialized hardware. The question now is: what specific arrangement of layers makes a model capable of understanding language, generating images, or synthesizing video?
+You know from the Neural Networks page that a model is a sequence of layers, and from the [GPU](../glossary.md#gpu) Computing page that those layers run in parallel on specialized hardware. The question now is: what specific arrangement of layers makes a model capable of understanding language, generating images, or synthesizing video?
 
 The answer -- for the vast majority of modern AI -- is the transformer.
 
@@ -36,7 +36,7 @@ RNNs have bad memory because they process sequentially, one step at a time.
 
 ### The "see the whole page" insight
 
-The 2017 paper "Attention Is All You Need" (Vaswani et al.) proposed discarding the sequential reading model entirely.
+The 2017 paper "[Attention](../glossary.md#attention) Is All You Need" (Vaswani et al.) proposed discarding the sequential reading model entirely.
 
 Instead: give the model the entire input at once, and let every element look directly at every other element to figure out what's related to what.
 
@@ -100,11 +100,11 @@ The encoder's job: understand the input sequence. The decoder's job: generate th
 
 In the years after 2017, researchers discovered that you could use just one half -- or modify the attention pattern -- to get a model tuned for a specific task:
 
-**Encoder-only (e.g., BERT):**
+**[Encoder](../glossary.md#encoder)-only (e.g., BERT):**
 
 The full encoder stack, no decoder. You feed in a sequence and get back a rich contextual representation of it. Good for tasks that require understanding: classification, named-entity recognition, semantic search. Not used for text generation.
 
-**Decoder-only (e.g., GPT, LLaMA, Mistral, Gemma):**
+**[Decoder](../glossary.md#decoder)-only (e.g., GPT, LLaMA, Mistral, Gemma):**
 
 Just the decoder stack, modified so each position can only attend to positions before it (no "cheating" by looking at future tokens). Used for text generation: predicts the next token, over and over. This is what modern language models are.
 
@@ -112,7 +112,7 @@ Just the decoder stack, modified so each position can only attend to positions b
 
 The full original architecture. Used when the task is explicitly about mapping one sequence to another: translation, summarization, speech-to-text.
 
-For the models you work with (LLaMA for text, LTX-Video for video), the relevant family is decoder-only for text models, and a modified architecture called DiT (Diffusion Transformer) for image/video -- described below.
+For the models you work with (LLaMA for text, LTX-Video for video), the relevant family is decoder-only for text models, and a modified architecture called DiT ([Diffusion](../glossary.md#diffusion) [Transformer](../glossary.md#transformer)) for image/video -- described below.
 
 ### A transformer block: the repeating unit
 
@@ -154,9 +154,9 @@ SINGLE TRANSFORMER BLOCK
 
 Breaking down each component:
 
-**Layer Norm** normalizes the activations to have controlled magnitude. Without it, values can drift to extreme scales as they pass through many blocks. Placed *before* each sub-layer (this is called "pre-norm" and is the standard in modern architectures like LLaMA, though the original paper placed it after).
+**[Layer](../glossary.md#layer) Norm** normalizes the activations to have controlled magnitude. Without it, values can drift to extreme scales as they pass through many blocks. Placed *before* each sub-layer (this is called "pre-norm" and is the standard in modern architectures like LLaMA, though the original paper placed it after).
 
-**Self-Attention** is the core mechanism. Each position in the sequence produces three vectors -- a Query, a Key, and a Value -- and the output for each position is a weighted sum of all the Values, where the weights come from how much each Query matches each Key. The full mechanism is covered in detail on the Attention page.
+**[Self-Attention](../glossary.md#self-attention)** is the core mechanism. Each position in the sequence produces three vectors -- a Query, a Key, and a Value -- and the output for each position is a weighted sum of all the Values, where the weights come from how much each Query matches each Key. The full mechanism is covered in detail on the Attention page.
 
 **Residual connection** (also called skip connection) adds the block's input directly to its output:
 
@@ -241,7 +241,7 @@ token vector + position vector = position-aware token vector
 
 The original paper used **sinusoidal positional encoding**: a fixed mathematical formula based on sine and cosine waves at different frequencies. Different dimensions of the position vector oscillate at different rates, giving each position a unique fingerprint.
 
-Modern architectures use **Rotary Position Embedding (RoPE)**, used in LLaMA, Mistral, and most current models. Instead of adding position vectors to the tokens, RoPE rotates the Query and Key vectors inside the attention mechanism by an angle proportional to position. The rotation encodes not absolute position but *relative* position -- how far apart two tokens are. This generalizes better to sequences longer than those seen in training.
+Modern architectures use **Rotary Position [Embedding](../glossary.md#embedding) ([RoPE](../glossary.md#rope))**, used in LLaMA, Mistral, and most current models. Instead of adding position vectors to the tokens, RoPE rotates the Query and Key vectors inside the attention mechanism by an angle proportional to position. The rotation encodes not absolute position but *relative* position -- how far apart two tokens are. This generalizes better to sequences longer than those seen in training.
 
 ```
 Sinusoidal (original):
@@ -349,12 +349,12 @@ This is why understanding transformers is prerequisite to understanding diffusio
 | **Transformer** | A neural network architecture that processes all input positions simultaneously using attention, allowing every element to directly interact with every other element |
 | **Encoder** | The transformer component that reads an input sequence and produces a contextual representation of it; used in BERT and the first half of translation models |
 | **Decoder** | The transformer component that generates an output sequence, attending to its own previous outputs and (optionally) to an encoder's output; used in GPT-style language models |
-| **Transformer Block** | The repeating unit of a transformer: LayerNorm -> Self-Attention -> Residual + LayerNorm -> FFN -> Residual. N of these are stacked to form the full model |
-| **Residual Connection** | A connection that adds a layer's input to its output (`output = layer(x) + x`); essential for training deep networks by providing direct paths for gradient flow |
+| **[Transformer Block](../glossary.md#transformer-block)** | The repeating unit of a transformer: LayerNorm -> Self-Attention -> Residual + LayerNorm -> FFN -> Residual. N of these are stacked to form the full model |
+| **[Residual Connection](../glossary.md#residual-connection)** | A connection that adds a layer's input to its output (`output = layer(x) + x`); essential for training deep networks by providing direct paths for gradient flow |
 | **Feed-Forward Network (FFN/MLP)** | The two-layer MLP inside each transformer block, applied identically to each position; expands dimension by ~4x, applies activation, then contracts back |
-| **Positional Encoding** | A mechanism to inject word/token order information into a transformer that otherwise sees all positions simultaneously; common forms are sinusoidal (original) and RoPE (modern) |
+| **[Positional Encoding](../glossary.md#positional-encoding)** | A mechanism to inject word/token order information into a transformer that otherwise sees all positions simultaneously; common forms are sinusoidal (original) and RoPE (modern) |
 | **RoPE** | Rotary Position Embedding; the positional encoding used in LLaMA and most modern transformers; encodes relative position by rotating Query and Key vectors inside attention |
-| **Layer Stacking** | The practice of repeating identical transformer blocks in sequence; depth (number of blocks) is a primary driver of model capability |
+| **[Layer Stacking](../glossary.md#layer-stacking)** | The practice of repeating identical transformer blocks in sequence; depth (number of blocks) is a primary driver of model capability |
 | **DiT** | Diffusion Transformer; a transformer architecture applied to image or video patches instead of word tokens, used in image and video generation models including LTX-Video |
 
 
@@ -363,7 +363,7 @@ This is why understanding transformers is prerequisite to understanding diffusio
 - Vaswani, A., et al. (2017). "Attention Is All You Need." *Advances in Neural Information Processing Systems 30*. The original transformer paper -- short and worth reading. Available at [arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
 - Alammar, J. "The Illustrated Transformer." A visual walkthrough of the original architecture with clear diagrams of the attention mechanism and encoder-decoder structure. Available at [jalammar.github.io/illustrated-transformer](http://jalammar.github.io/illustrated-transformer/)
 - Touvron, H., et al. (2023). "LLaMA: Open and Efficient Foundation Language Models." The LLaMA architecture paper, which describes the pre-norm, RoPE, SwiGLU FFN, and other modern transformer conventions. Available at [arxiv.org/abs/2302.13971](https://arxiv.org/abs/2302.13971)
-- Peebles, W., & Xie, S. (2023). "Scalable Diffusion Models with Transformers." The DiT paper, which introduces replacing U-Net backbones with transformer blocks for diffusion models. Available at [arxiv.org/abs/2212.09748](https://arxiv.org/abs/2212.09748)
+- Peebles, W., & Xie, S. (2023). "Scalable Diffusion Models with Transformers." The DiT paper, which introduces replacing [U-Net](../glossary.md#u-net) backbones with transformer blocks for diffusion models. Available at [arxiv.org/abs/2212.09748](https://arxiv.org/abs/2212.09748)
 
 
 ## See Also

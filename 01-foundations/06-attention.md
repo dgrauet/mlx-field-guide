@@ -1,6 +1,6 @@
 # Attention
 
-> **One-liner:** Attention is a mechanism that lets each element in a sequence dynamically decide how much to focus on every other element.
+> **One-liner:** [Attention](../glossary.md#attention) is a mechanism that lets each element in a sequence dynamically decide how much to focus on every other element.
 
 ## The Intuition
 
@@ -103,7 +103,7 @@ INPUT TOKEN PROJECTIONS
 
 The intuition for each:
 
-- **Query (Q):** "What am I looking for?" Token at position i uses its Q vector to "ask a question" -- it encodes what kind of information it needs from the rest of the sequence.
+- **Query (Q):** "What am I looking for?" [Token](../glossary.md#token) at position i uses its Q vector to "ask a question" -- it encodes what kind of information it needs from the rest of the sequence.
 - **Key (K):** "What do I contain?" Token at position j uses its K vector to "advertise" -- it encodes what kind of information it holds.
 - **Value (V):** "What do I actually provide?" Token at position j's V vector holds the actual information to be passed along if it's selected.
 
@@ -219,7 +219,7 @@ Attention(Q, K, V) = softmax( Q K^T / sqrt(d_k) ) V
   @ V:        (N, d_v)     <- output (enriched token representations)
 ```
 
-This is **Scaled Dot-Product Attention**, the operation at the core of every transformer.
+This is **[Scaled Dot-Product Attention](../glossary.md#scaled-dot-product-attention)**, the operation at the core of every transformer.
 
 ### Multi-head attention: running it in parallel
 
@@ -386,9 +386,9 @@ This is why attention is where optimization work is concentrated. The model's FF
 
 ### Flash Attention: the key algorithm
 
-Standard attention computes and writes the full attention matrix to GPU memory before multiplying by V. For long sequences, this intermediate matrix doesn't fit in fast on-chip memory (SRAM), so it gets written to VRAM and read back -- a memory bandwidth bottleneck.
+Standard attention computes and writes the full attention matrix to [GPU](../glossary.md#gpu) memory before multiplying by V. For long sequences, this intermediate matrix doesn't fit in fast on-chip memory (SRAM), so it gets written to [VRAM](../glossary.md#vram) and read back -- a memory bandwidth bottleneck.
 
-**Flash Attention** (Dao et al., 2022) rewrites the attention computation to avoid materializing the full attention matrix. It tiles the inputs into blocks that fit in SRAM, computes attention block by block, and uses a numerically stable online softmax algorithm that never needs to see all scores at once.
+**[Flash Attention](../glossary.md#flash-attention)** (Dao et al., 2022) rewrites the attention computation to avoid materializing the full attention matrix. It tiles the inputs into blocks that fit in SRAM, computes attention block by block, and uses a numerically stable online softmax algorithm that never needs to see all scores at once.
 
 ```
 STANDARD ATTENTION (memory-bound at long context)
@@ -423,7 +423,7 @@ FLASH ATTENTION (SRAM-resident, IO-efficient)
           memory bandwidth usage, faster on long sequences.
 ```
 
-In CUDA-land, PyTorch uses Flash Attention automatically for `F.scaled_dot_product_attention` when the input shapes support it.
+In [CUDA](../glossary.md#cuda)-land, PyTorch uses Flash Attention automatically for `F.scaled_dot_product_attention` when the input shapes support it.
 
 In MLX, the equivalent is `mx.fast.scaled_dot_product_attention`:
 
@@ -512,16 +512,16 @@ class TransformerBlock:
 | Term | Definition |
 |------|------------|
 | **Attention** | A mechanism where each element in a sequence computes a weighted sum over all other elements, where the weights are learned based on content relevance |
-| **Self-Attention** | Attention where Q, K, and V all come from the same sequence; each token attends to all tokens in the same sequence, including itself |
-| **Cross-Attention** | Attention where Q comes from one sequence and K, V come from a different sequence; used to let one modality guide another (e.g., text guiding video) |
+| **[Self-Attention](../glossary.md#self-attention)** | Attention where Q, K, and V all come from the same sequence; each token attends to all tokens in the same sequence, including itself |
+| **[Cross-Attention](../glossary.md#cross-attention)** | Attention where Q comes from one sequence and K, V come from a different sequence; used to let one modality guide another (e.g., text guiding video) |
 | **Query (Q)** | The "what am I looking for?" vector; each token's query is matched against all other tokens' keys to produce attention scores |
 | **Key (K)** | The "what do I contain?" vector; each token's key is matched against all queries, determining how much other tokens attend to it |
 | **Value (V)** | The "what information do I provide?" vector; the actual content that is aggregated using the attention weights |
-| **Attention Score** | The dot product of a query with a key, measuring relevance between two tokens; divided by sqrt(d_k) before softmax |
+| **[Attention Score](../glossary.md#attention-score)** | The dot product of a query with a key, measuring relevance between two tokens; divided by sqrt(d_k) before softmax |
 | **Scaled Dot-Product Attention** | The complete single-head attention operation: softmax(QK^T / sqrt(d_k)) V; the building block for multi-head attention |
-| **Multi-Head Attention** | Running H independent attention operations in parallel, each with different projections; the heads' outputs are concatenated and projected back to d_model |
-| **Attention Head** | One of H parallel attention operations in multi-head attention, each with its own W_Q, W_K, W_V projection matrices |
-| **KV-Cache** | Stored K and V tensors from previous generation steps, enabling efficient autoregressive generation by avoiding recomputation |
+| **[Multi-Head Attention](../glossary.md#multi-head-attention)** | Running H independent attention operations in parallel, each with different projections; the heads' outputs are concatenated and projected back to d_model |
+| **[Attention Head](../glossary.md#attention-head)** | One of H parallel attention operations in multi-head attention, each with its own W_Q, W_K, W_V projection matrices |
+| **[KV-Cache](../glossary.md#kv-cache)** | Stored K and V tensors from previous generation steps, enabling efficient autoregressive generation by avoiding recomputation |
 | **Flash Attention** | An IO-efficient attention algorithm (Dao et al., 2022) that tiles the attention computation to avoid writing the full seq×seq matrix to GPU memory; in MLX: `mx.fast.scaled_dot_product_attention` |
 | **Grouped-Query Attention (GQA)** | Multi-head attention variant where K and V heads are shared across groups of Q heads; reduces KV-cache memory with minimal quality loss |
 
@@ -531,7 +531,7 @@ class TransformerBlock:
 - Vaswani, A., et al. (2017). "Attention Is All You Need." *Advances in Neural Information Processing Systems 30*. Introduces the transformer and defines scaled dot-product attention and multi-head attention. Available at [arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
 - Dao, T., et al. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness." Introduces the tiled attention algorithm that avoids materializing the full attention matrix. Available at [arxiv.org/abs/2205.14135](https://arxiv.org/abs/2205.14135)
 - MLX Documentation. `mx.fast.scaled_dot_product_attention`. Available at [ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.fast.scaled_dot_product_attention.html](https://ml-explore.github.io/mlx/build/html/python/_autosummary/mlx.core.fast.scaled_dot_product_attention.html)
-- Alammar, J. "The Illustrated Transformer." Visual walkthrough of attention with clear diagrams of Q/K/V projections and the attention matrix. Available at [jalammar.github.io/illustrated-transformer](http://jalammar.github.io/illustrated-transformer/)
+- Alammar, J. "The Illustrated [Transformer](../glossary.md#transformer)." Visual walkthrough of attention with clear diagrams of Q/K/V projections and the attention matrix. Available at [jalammar.github.io/illustrated-transformer](http://jalammar.github.io/illustrated-transformer/)
 
 
 ## See Also

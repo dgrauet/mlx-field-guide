@@ -160,7 +160,7 @@ Linear layers are just the start. Real models use a variety of layer types, each
 
 **Linear (also called Dense or Fully Connected):**
 
-Every input is connected to every output via the weight matrix. Shape transform: `(batch, in_features) -> (batch, out_features)`.
+Every input is connected to every output via the weight matrix. [Shape](../glossary.md#shape) transform: `(batch, in_features) -> (batch, out_features)`.
 
 ```python
 # PyTorch
@@ -170,7 +170,7 @@ nn.Linear(768, 3072)
 nn.Linear(768, 3072)
 ```
 
-**Conv2d (2D Convolution):**
+**Conv2d (2D [Convolution](../glossary.md#convolution)):**
 
 A sliding window that scans across a 2D spatial input (like an image). Instead of connecting every input to every output, a small kernel (e.g., 3x3) slides across the input, applying the same weights at every position. This makes Convolutions efficient for images and naturally captures local patterns (edges, textures).
 
@@ -190,7 +190,7 @@ Input image (5x5):          3x3 kernel:
 
 The kernel slides across every valid position, computing a dot product at each step.
 
-**LayerNorm (Layer Normalization):**
+**LayerNorm ([Layer](../glossary.md#layer) [Normalization](../glossary.md#normalization)):**
 
 Rescales the values within a layer to have approximately zero mean and unit variance. Without it, values can drift wildly as they pass through many layers -- either exploding toward infinity or collapsing toward zero. LayerNorm stabilizes training and inference.
 
@@ -208,7 +208,7 @@ normalized = [(x - mean) / std for x in values]
 
 A simpler variant of LayerNorm that only normalizes by the root-mean-square magnitude without subtracting the mean. Used in LLaMA and many recent transformer architectures. Slightly cheaper to compute than LayerNorm.
 
-**Embedding:**
+**[Embedding](../glossary.md#embedding):**
 
 A lookup table that converts integer indices into dense vectors. Used everywhere: to turn token IDs into vectors in language models, to turn pixel positions into position vectors, to encode any categorical input.
 
@@ -275,7 +275,7 @@ Parameters start as random numbers and get gradually adjusted by training to pro
 - Number of layers
 - Width of each layer (how many features)
 - Which activation function to use
-- Batch size
+- [Batch](../glossary.md#batch) size
 
 Hyperparameters are not learned from data -- they are design decisions baked into the model architecture. Choosing good hyperparameters is part of the art of ML research.
 
@@ -319,7 +319,7 @@ embed = nn.Embedding(50257, 768)
 
 ### PyTorch to MLX: same concepts, similar names
 
-When porting CUDA models, most layer names translate directly. The PyTorch mental model carries over:
+When porting [CUDA](../glossary.md#cuda) models, most layer names translate directly. The PyTorch mental model carries over:
 
 | PyTorch              | MLX                  | Notes                                    |
 |----------------------|----------------------|------------------------------------------|
@@ -385,14 +385,14 @@ Understanding this hierarchy is essential when you're debugging shape mismatches
 | Term | Definition |
 |------|------------|
 | **Layer** | A single mathematical transformation within a neural network; takes a tensor in, produces a tensor out |
-| **Weight** | A learned parameter tensor inside a layer; the "knobs" that get adjusted during training |
-| **Bias** | A learned offset vector added after the weight multiplication; allows the layer to shift its output |
-| **Activation Function** | A non-linear function applied after each layer; without it, stacking layers provides no benefit over a single layer (e.g., ReLU, GELU, SiLU) |
-| **Parameter** | Any number inside the model that is learned from data during training; includes weights, biases, embedding vectors, and normalization scales |
-| **Hyperparameter** | A design choice made before training that is not learned from data; examples include learning rate, number of layers, and layer width |
-| **Model** | A specific layer architecture combined with a specific set of trained parameter values |
-| **Forward Pass** | The process of passing an input tensor through every layer in sequence to produce an output; also called "inference" when done on a trained model |
-| **Linear Layer** | A layer that performs `output = input @ weight + bias`; the most fundamental layer type (also called Dense or Fully Connected) |
+| **[Weight](../glossary.md#weight)** | A learned parameter tensor inside a layer; the "knobs" that get adjusted during training |
+| **[Bias](../glossary.md#bias)** | A learned offset vector added after the weight multiplication; allows the layer to shift its output |
+| **[Activation Function](../glossary.md#activation-function)** | A non-linear function applied after each layer; without it, stacking layers provides no benefit over a single layer (e.g., ReLU, GELU, SiLU) |
+| **[Parameter](../glossary.md#parameter)** | Any number inside the model that is learned from data during training; includes weights, biases, embedding vectors, and normalization scales |
+| **[Hyperparameter](../glossary.md#hyperparameter)** | A design choice made before training that is not learned from data; examples include learning rate, number of layers, and layer width |
+| **[Model](../glossary.md#model)** | A specific layer architecture combined with a specific set of trained parameter values |
+| **[Forward Pass](../glossary.md#forward-pass)** | The process of passing an input tensor through every layer in sequence to produce an output; also called "inference" when done on a trained model |
+| **[Linear Layer](../glossary.md#linear-layer)** | A layer that performs `output = input @ weight + bias`; the most fundamental layer type (also called Dense or Fully Connected) |
 | **Convolution** | A layer that applies a sliding kernel across a spatial input; efficient for images because the same weights are reused at every position |
 | **Normalization** | A layer that rescales activations to have controlled magnitude; prevents values from exploding or vanishing as they pass through many layers (e.g., LayerNorm, RMSNorm) |
 | **Embedding** | A layer that converts integer indices into dense learned vectors via a lookup table; used to represent tokens, positions, or any categorical input |
@@ -402,7 +402,7 @@ Understanding this hierarchy is essential when you're debugging shape mismatches
 
 - Nielsen, M. (2015). *Neural Networks and Deep Learning*. Free online at [neuralnetworksanddeeplearning.com](http://neuralnetworksanddeeplearning.com). Chapters 1 and 2 cover the core concepts with clear visual explanations -- the best free introduction available.
 - [MLX nn module documentation](https://ml-explore.github.io/mlx/build/html/python/nn/index.html) -- the authoritative reference for all layer types available in `mlx.nn`, their parameters, and their behavior.
-- 3Blue1Brown. *Neural Networks* video series. Available at [3b1b.co/neural-networks](https://www.3blue1brown.com/topics/neural-networks). Particularly chapters 1 ("But what is a neural network?") and 2 ("Gradient descent, how neural networks learn") -- excellent visual intuition for how layers, weights, and training work together.
+- 3Blue1Brown. *Neural Networks* video series. Available at [3b1b.co/neural-networks](https://www.3blue1brown.com/topics/neural-networks). Particularly chapters 1 ("But what is a neural network?") and 2 ("[Gradient](../glossary.md#gradient) descent, how neural networks learn") -- excellent visual intuition for how layers, weights, and training work together.
 
 
 ## See Also

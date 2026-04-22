@@ -1,12 +1,12 @@
 # Image Generation: CUDA vs MLX
 
-> **Status:** 🟢 CUDA (Mature -- canonical diffusers library, massive community, every major model) | 🟡 MLX (Emerging -- core models work, extension ecosystem thin)
+> **Status:** 🟢 [CUDA](../glossary.md#cuda) (Mature -- canonical diffusers library, massive community, every major model) | 🟡 MLX (Emerging -- core models work, extension ecosystem thin)
 
 ## What This Domain Covers
 
 Generating images from text prompts or other conditioning inputs. This encompasses the full pipeline of modern diffusion-based image generation: text-to-image, image-to-image, inpainting, and conditioned generation via ControlNet or IP-Adapter. It also includes the tooling layer -- the UIs, pipeline libraries, and model hubs that make these capabilities accessible.
 
-Image generation is the domain where the CUDA/MLX gap is most visible in everyday tooling. On CUDA, Hugging Face diffusers is the single canonical library: every research model (Stable Diffusion 1.5, SDXL, Flux, DALL-E 3 distillations, PixArt-Alpha) ships with a diffusers pipeline, ComfyUI uses diffusers under the hood, Automatic1111 integrates with it, and the community has built thousands of extensions, ControlNets, LoRA packs, and sampling algorithm variants on top of it.
+Image generation is the domain where the CUDA/MLX gap is most visible in everyday tooling. On CUDA, Hugging Face diffusers is the single canonical library: every research model (Stable [Diffusion](../glossary.md#diffusion) 1.5, SDXL, Flux, DALL-E 3 distillations, PixArt-Alpha) ships with a diffusers pipeline, ComfyUI uses diffusers under the hood, Automatic1111 integrates with it, and the community has built thousands of extensions, ControlNets, LoRA packs, and sampling algorithm variants on top of it.
 
 On MLX, coverage is narrower: Flux works via mflux, Stable Diffusion 1.5 and SDXL have implementations in mlx-examples, and ComfyUI has growing MLX node support. The core generation loop works. The extension ecosystem -- inpainting, ControlNet, IP-Adapter, arbitrary LoRA loading, img2img -- is where the gap opens.
 
@@ -20,7 +20,7 @@ Diffusers is the central organizing library for diffusion models. Released by Hu
 
 - Standardized `Pipeline` classes for every major model
 - Modular components (schedulers, VAEs, text encoders, U-Nets, transformers) that can be swapped independently
-- A scheduler library with 20+ sampling algorithms (DDPM, DDIM, DPM++, Euler, LMS, PNDM, etc.)
+- A scheduler library with 20+ sampling algorithms ([DDPM](../glossary.md#ddpm), [DDIM](../glossary.md#ddim), DPM++, Euler, LMS, PNDM, etc.)
 - Automatic mixed precision (FP16/BF16) and memory optimization utilities
 - Integration with Hugging Face Hub for model loading
 
@@ -304,7 +304,7 @@ This conversion boundary (MLX <-> PyTorch via numpy) is the standard pattern for
 Flux at FP16 is approximately 24 GB -- exactly the limit of an RTX 4090. In practice this means on CUDA you need either:
 - An RTX 4090 (24 GB, barely fits, no headroom for ControlNet or high res)
 - An A100/H100 (professional, expensive)
-- Quantization to FP8 or INT8 with quality trade-offs
+- [Quantization](../glossary.md#quantization) to FP8 or [INT8](../glossary.md#int8) with quality trade-offs
 
 On Apple Silicon:
 
@@ -343,8 +343,8 @@ FLUX.1-DEV MEMORY REQUIREMENTS
 | **Sampling algorithms** | 🟢 20+ schedulers in diffusers (Euler, DPM++, DDIM, LMS, PNDM, etc.) | 🟡 Fewer options; typically DDIM or DPM++ | Small for basic use; noticeable for advanced users who tune samplers |
 | **ComfyUI integration** | 🟢 Native; all models supported; massive node library | 🟡 MLX custom nodes exist (including developer's own work); not all models covered | Medium -- ComfyUI works with MLX for supported models; the 10,000+ CUDA-native node extensions do not work |
 | **Web UI (Automatic1111)** | 🟢 Full support; plugins; model management | 🔴 No MLX backend | Large -- Automatic1111 has MPS support via PyTorch, not MLX |
-| **Model diversity** | 🟢 Tens of thousands of fine-tunes, styles, characters | 🟡 Limited to what mflux/mlx-examples implement; growing LoRA support | Large -- the long tail of specialized models is CUDA-only |
-| **Upscaling (ESRGAN, tile)** | 🟢 Real-ESRGAN, BSRGAN, tile-based upscaling in Automatic1111/ComfyUI | 🔴 No MLX upscaling library | Medium -- post-processing step; can run on CPU or via separate tool |
+| **[Model](../glossary.md#model) diversity** | 🟢 Tens of thousands of fine-tunes, styles, characters | 🟡 Limited to what mflux/mlx-examples implement; growing LoRA support | Large -- the long tail of specialized models is CUDA-only |
+| **Upscaling (ESRGAN, tile)** | 🟢 Real-ESRGAN, BSRGAN, tile-based upscaling in Automatic1111/ComfyUI | 🔴 No MLX upscaling library | Medium -- post-processing step; can run on [CPU](../glossary.md#cpu) or via separate tool |
 | **Generation speed** | 🟢 RTX 4090: ~3-5s (20 steps, 512x512 SD1.5); ~25-40s (Flux dev 1024x1024) | 🟡 M3 Max: ~30s (SD1.5 20 steps); ~300s (Flux dev 1024x1024) | Large -- CUDA is 5-10x faster for equivalent tasks; speed gap narrows on M4 Ultra |
 | **Textual inversion** | 🟢 Standard feature in diffusers and Automatic1111 | 🔴 Not implemented | Small -- textual inversion is less used since LoRA dominates |
 | **SDXL refiner** | 🟢 Two-stage pipeline (base + refiner) | 🔴 Not implemented for MLX SDXL | Small -- mostly superseded by Flux for quality |
@@ -404,7 +404,7 @@ IMAGE GENERATION PERFORMANCE (text-to-image, approximate)
 
 **ComfyUI MLX node library.** The ComfyUI-LTXVideo-mlx project demonstrates the pattern for MLX nodes in ComfyUI. Generalizing this into a shared library of MLX utilities for ComfyUI node authors (standard tensor conversion, model caching, memory management) would lower the barrier for future MLX ComfyUI nodes.
 
-**Performance optimization for SD1.5.** The mlx-examples Stable Diffusion implementation is a reference, not an optimized production implementation. Profiling the bottlenecks (VAE encode/decode, attention in the U-Net, scheduler steps) and optimizing with custom Metal kernels or better fusion strategies could narrow the performance gap significantly.
+**Performance optimization for SD1.5.** The mlx-examples Stable Diffusion implementation is a reference, not an optimized production implementation. Profiling the bottlenecks (VAE encode/decode, attention in the [U-Net](../glossary.md#u-net), scheduler steps) and optimizing with custom [Metal](../glossary.md#metal) kernels or better fusion strategies could narrow the performance gap significantly.
 
 ---
 
@@ -427,7 +427,7 @@ IMAGE GENERATION PERFORMANCE (text-to-image, approximate)
 - [Diffusion](../01-foundations/08-diffusion.md) -- the mathematical basis of diffusion models; noise schedules, score matching, DDPM/DDIM; essential for understanding why sampling algorithm choice matters
 - [Latent Space](../01-foundations/07-latent-space.md) -- explains VAEs and why diffusion happens in latent space rather than pixel space; the 8x spatial compression that makes U-Net computation tractable
 - [Attention](../01-foundations/06-attention.md) -- cross-attention is how text conditioning works in SD1.5/SDXL; self-attention is the backbone of Flux's DiT architecture
-- [Transformers](../01-foundations/05-transformers.md) -- Flux uses a Diffusion Transformer (DiT) rather than a U-Net; understanding transformers helps with understanding the architecture shift
+- [Transformers](../01-foundations/05-transformers.md) -- Flux uses a Diffusion [Transformer](../glossary.md#transformer) (DiT) rather than a U-Net; understanding transformers helps with understanding the architecture shift
 - [Quantization](../01-foundations/10-quantization.md) -- mflux uses 4-bit quantization to fit Flux in practical memory; explains the quality/memory trade-offs
 - [Frameworks](02-frameworks.md) -- PyTorch/diffusers vs MLX; the pattern for porting diffusers pipelines to MLX
 - [Video Generation](05-video-generation.md) -- the adjacent domain where image generation techniques extend to temporal sequences; where the MLX gap is widest

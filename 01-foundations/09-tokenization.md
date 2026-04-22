@@ -1,10 +1,10 @@
 # Tokenization
 
-> **One-liner:** Tokenization converts raw text into a sequence of numbers (token IDs) that a model can process, using a learned vocabulary of subword pieces.
+> **One-liner:** [Tokenization](../glossary.md#tokenization) converts raw text into a sequence of numbers (token IDs) that a model can process, using a learned vocabulary of subword pieces.
 
 ## The Intuition
 
-You know from the Transformers and Attention pages that a transformer processes a sequence of vectors -- one vector per position. But the model starts from raw text, a string of characters. Tokenization is the bridge: it converts that string into a numbered sequence the model can actually work with.
+You know from the Transformers and [Attention](../glossary.md#attention) pages that a transformer processes a sequence of vectors -- one vector per position. But the model starts from raw text, a string of characters. Tokenization is the bridge: it converts that string into a numbered sequence the model can actually work with.
 
 The challenge is harder than it looks.
 
@@ -261,7 +261,7 @@ CONTEXT WINDOW EXAMPLES
 
 BPE is not the only algorithm. Two other tokenizers you will encounter in multimodal work:
 
-**SentencePiece** (used by T5, LLaMA): Similar to BPE but works at the byte level. It treats the text as a raw byte sequence rather than a Unicode character sequence, which means it handles any language natively without needing a language-specific pre-processing step. T5 uses SentencePiece with a 32,100-token vocabulary.
+**[SentencePiece](../glossary.md#sentencepiece)** (used by T5, LLaMA): Similar to BPE but works at the byte level. It treats the text as a raw byte sequence rather than a Unicode character sequence, which means it handles any language natively without needing a language-specific pre-processing step. T5 uses SentencePiece with a 32,100-token vocabulary.
 
 **CLIP tokenizer**: Based on BPE with a 49,408-token vocabulary. Has a hard 77-token context limit -- prompts longer than 77 tokens are truncated. This is a critical constraint in many image generation pipelines that use CLIP for text conditioning. For LTX-Video and other advanced video models, T5 is used instead precisely because its 512+ token context handles detailed prompts without truncation.
 
@@ -299,7 +299,7 @@ When porting a model to MLX:
 
 ### Tokenizers run on CPU -- do not port them
 
-Tokenizers are fast and they run on CPU. There is no reason to re-implement them in MLX. Use the existing libraries:
+Tokenizers are fast and they run on [CPU](../glossary.md#cpu). There is no reason to re-implement them in MLX. Use the existing libraries:
 
 ```python
 # Hugging Face transformers (most common)
@@ -358,7 +358,7 @@ Key details for LTX-Video:
 
 ### The 77-token cliff in CLIP-based models
 
-For reference when working with other image generation models (Stable Diffusion 1.x, 2.x): CLIP tokenizer truncates at 77 tokens. This is not a soft limit -- tokens beyond 77 are silently dropped:
+For reference when working with other image generation models (Stable [Diffusion](../glossary.md#diffusion) 1.x, 2.x): CLIP tokenizer truncates at 77 tokens. This is not a soft limit -- tokens beyond 77 are silently dropped:
 
 ```
 CLIP 77-TOKEN LIMIT (Stable Diffusion)
@@ -427,21 +427,21 @@ TOKENIZATION DEBUGGING CHECKLIST
 | Term | Definition |
 |------|------------|
 | **Tokenization** | The process of converting raw text into a sequence of discrete tokens (integers) that a model can process |
-| **Token** | A single unit in the tokenizer's vocabulary; may be a character, a subword piece, a whole word, or a special symbol |
-| **Tokenizer** | The component that performs tokenization; maps strings to token ID sequences and back; always paired with a specific model's vocabulary |
-| **Token ID** | The integer index of a token in the vocabulary; what gets passed to the model's embedding table |
-| **Vocabulary** | The fixed set of all tokens a tokenizer knows; tokens outside the vocabulary are split into smaller known pieces |
+| **[Token](../glossary.md#token)** | A single unit in the tokenizer's vocabulary; may be a character, a subword piece, a whole word, or a special symbol |
+| **[Tokenizer](../glossary.md#tokenizer)** | The component that performs tokenization; maps strings to token ID sequences and back; always paired with a specific model's vocabulary |
+| **[Token ID](../glossary.md#token-id)** | The integer index of a token in the vocabulary; what gets passed to the model's embedding table |
+| **[Vocabulary](../glossary.md#vocabulary)** | The fixed set of all tokens a tokenizer knows; tokens outside the vocabulary are split into smaller known pieces |
 | **BPE (Byte-Pair Encoding)** | The dominant subword tokenization algorithm; starts with characters, iteratively merges the most frequent adjacent pairs until the target vocabulary size is reached |
-| **Subword** | A token that represents part of a word (e.g., "##tion", "un##", "##ness"); allows the vocabulary to cover rare and unknown words by decomposing them into known pieces |
-| **Embedding** | A learned vector representation for each token ID; stored in the model's embedding table; converts a token ID into a dense vector that the transformer processes |
-| **Special Tokens** | Reserved token IDs that carry structural signals rather than semantic content: BOS (beginning of sequence), EOS (end of sequence), PAD (padding), SEP (separator), UNK (unknown) |
+| **[Subword](../glossary.md#subword)** | A token that represents part of a word (e.g., "##tion", "un##", "##ness"); allows the vocabulary to cover rare and unknown words by decomposing them into known pieces |
+| **[Embedding](../glossary.md#embedding)** | A learned vector representation for each token ID; stored in the model's embedding table; converts a token ID into a dense vector that the transformer processes |
+| **[Special Tokens](../glossary.md#special-tokens)** | Reserved token IDs that carry structural signals rather than semantic content: BOS (beginning of sequence), EOS (end of sequence), PAD (padding), SEP (separator), UNK (unknown) |
 | **BOS (Beginning of Sequence)** | Special token prepended to indicate the start of a new input sequence; tells the model where the text begins |
 | **EOS (End of Sequence)** | Special token indicating end of input or output; the model generates this token to signal it has finished |
 | **PAD (Padding)** | Special token used to fill shorter sequences in a batch to a uniform length; attention mask is set to 0 at PAD positions so the model ignores them |
-| **Context Window** | The maximum number of tokens a model can process in a single forward pass; determined at training time; inputs longer than this limit are truncated |
+| **[Context Window](../glossary.md#context-window)** | The maximum number of tokens a model can process in a single forward pass; determined at training time; inputs longer than this limit are truncated |
 | **SentencePiece** | A tokenization library from Google that implements BPE at the byte level; handles any language natively; used by T5, LLaMA, and others |
-| **CLIP Tokenizer** | A BPE tokenizer with 49,408-token vocabulary and a hard 77-token context limit; used in Stable Diffusion 1.x and 2.x for text conditioning |
-| **T5 Tokenizer** | A SentencePiece tokenizer with 32,100 tokens; handles up to 512 tokens; used by LTX-Video for text conditioning via T5 encoder |
+| **[CLIP Tokenizer](../glossary.md#clip-tokenizer)** | A BPE tokenizer with 49,408-token vocabulary and a hard 77-token context limit; used in Stable Diffusion 1.x and 2.x for text conditioning |
+| **[T5 Tokenizer](../glossary.md#t5-tokenizer)** | A SentencePiece tokenizer with 32,100 tokens; handles up to 512 tokens; used by LTX-Video for text conditioning via T5 encoder |
 
 
 ## Sources

@@ -79,7 +79,7 @@ Batch of images:  shape = (32, 3, 256, 256) -- 4 dimensions, 6,291,456 elements
 
 The total number of elements is the product of all the shape values. A (32, 3, 256, 256) tensor holds 32 * 3 * 256 * 256 = 6,291,456 numbers.
 
-Shape is the single most important property to keep track of when working with ML code. When something goes wrong, checking shapes is almost always the first debugging step.
+[Shape](../glossary.md#shape) is the single most important property to keep track of when working with ML code. When something goes wrong, checking shapes is almost always the first debugging step.
 
 Here is a labeled 3D tensor to make the axes concrete:
 
@@ -108,12 +108,12 @@ Every tensor stores numbers in a specific numeric format, called the **dtype** (
 
 Common dtypes in ML:
 
-| Dtype    | Bits | Bytes | Range (approx)             | Use case                           |
+| [Dtype](../glossary.md#dtype)    | Bits | Bytes | Range (approx)             | Use case                           |
 |----------|------|-------|----------------------------|------------------------------------|
 | float32  | 32   | 4     | ±3.4 × 10^38, ~7 sig figs  | Default for training and inference |
 | float16  | 16   | 2     | ±65,504, ~3 sig figs        | Faster inference, less memory      |
-| bfloat16 | 16   | 2     | ±3.4 × 10^38, ~2 sig figs  | Training on modern hardware        |
-| int8     | 8    | 1     | -128 to 127                | Quantized models (see Quantization)|
+| bfloat16 | 16   | 2     | ±3.4 × 10^38, ~2 sig figs  | [Training](../glossary.md#training) on modern hardware        |
+| int8     | 8    | 1     | -128 to 127                | Quantized models (see [Quantization](../glossary.md#quantization))|
 | int32    | 32   | 4     | ±2.1 × 10^9                | Indices, token IDs                 |
 | bool     | 1    | 1*    | True / False               | Masks                              |
 
@@ -121,7 +121,7 @@ Common dtypes in ML:
 
 The tradeoff is always precision vs. memory. A float32 model uses twice the memory of a float16 model. Quantized models (int8 or lower) can be 4-8x smaller than their float32 counterparts, at some cost to output quality.
 
-When porting a CUDA model to MLX, dtype mismatches are a common source of silent bugs: the computation runs but produces slightly wrong numbers because precision was quietly lost somewhere.
+When porting a [CUDA](../glossary.md#cuda) model to MLX, dtype mismatches are a common source of silent bugs: the computation runs but produces slightly wrong numbers because precision was quietly lost somewhere.
 
 ### Operations
 
@@ -142,7 +142,7 @@ A = [[1, 2, 3],    sum(axis=0) = [5, 7, 9]   -- sum each column
                    sum()       = 21            -- sum everything
 ```
 
-**Matrix multiplication** (`matmul` or `@`) is the operation at the heart of every neural network layer. It combines two matrices according to the rules of linear algebra. Shape rule: `(m, k) @ (k, n) -> (m, n)`. The inner dimensions must match.
+**[Matrix](../glossary.md#matrix) multiplication** (`matmul` or `@`) is the operation at the heart of every neural network layer. It combines two matrices according to the rules of linear algebra. Shape rule: `(m, k) @ (k, n) -> (m, n)`. The inner dimensions must match.
 
 **Reshaping** reinterprets the same data under a different shape, without changing the underlying values:
 
@@ -165,7 +165,7 @@ A = [[1, 2, 3],    A.T = [[1, 4],
 
 ### Broadcasting
 
-**Broadcasting** is a rule for automatically expanding tensors with mismatched shapes so that element-wise operations work. Instead of raising an error when shapes don't match, the framework "broadcasts" the smaller tensor to match the larger one.
+**[Broadcasting](../glossary.md#broadcasting)** is a rule for automatically expanding tensors with mismatched shapes so that element-wise operations work. Instead of raising an error when shapes don't match, the framework "broadcasts" the smaller tensor to match the larger one.
 
 ```
 A = [[1, 2, 3],    B = [10, 20, 30]   -- B has shape (3,), A has shape (2, 3)
@@ -283,16 +283,16 @@ When this tensor passes through convolutional layers, gets downsampled by the VA
 
 | Term | Definition |
 |------|------------|
-| **Tensor** | A multi-dimensional array of numbers; the generalization of scalars, vectors, and matrices to any number of dimensions |
-| **Scalar** | A single number; a 0-dimensional tensor |
-| **Vector** | A 1-dimensional tensor; a list of numbers |
+| **[Tensor](../glossary.md#tensor)** | A multi-dimensional array of numbers; the generalization of scalars, vectors, and matrices to any number of dimensions |
+| **[Scalar](../glossary.md#scalar)** | A single number; a 0-dimensional tensor |
+| **[Vector](../glossary.md#vector)** | A 1-dimensional tensor; a list of numbers |
 | **Matrix** | A 2-dimensional tensor; a grid of numbers arranged in rows and columns |
 | **Shape** | An ordered tuple of integers describing the size of each dimension; e.g., `(32, 3, 256, 256)` |
 | **Dtype** | The numeric format used to store each element; determines precision and memory cost (e.g., float32, float16, int8) |
 | **Broadcasting** | A set of rules for automatically expanding tensors with compatible but mismatched shapes during element-wise operations |
-| **Axis / Dimension** | A single "direction" in a tensor; a tensor's rank is the number of axes it has |
-| **Contiguous** | A tensor whose elements are stored in a single unbroken block of memory in the expected order; required by some operations |
-| **Stride** | The number of elements to skip in memory to move one step along a given axis; how the framework maps multi-dimensional indices to flat memory addresses |
+| **[Axis / Dimension](../glossary.md#axis-dimension)** | A single "direction" in a tensor; a tensor's rank is the number of axes it has |
+| **[Contiguous](../glossary.md#contiguous)** | A tensor whose elements are stored in a single unbroken block of memory in the expected order; required by some operations |
+| **[Stride](../glossary.md#stride)** | The number of elements to skip in memory to move one step along a given axis; how the framework maps multi-dimensional indices to flat memory addresses |
 
 
 ## Sources

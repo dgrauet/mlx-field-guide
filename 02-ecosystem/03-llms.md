@@ -1,12 +1,12 @@
 # LLMs: CUDA vs MLX
 
-> **Status:** 🟢 CUDA (Mature -- industry standard, massive tooling ecosystem) | 🟡 MLX (Strong -- inference and fine-tuning well covered, serving gaps remain)
+> **Status:** 🟢 [CUDA](../glossary.md#cuda) (Mature -- industry standard, massive tooling ecosystem) | 🟡 MLX (Strong -- inference and fine-tuning well covered, serving gaps remain)
 
 ## What This Domain Covers
 
 Running, serving, and fine-tuning large language models. This includes every step from loading pre-trained weights to generating tokens at inference time, through serving many concurrent users in production, to adapting a base model to a new task via fine-tuning.
 
-LLMs are where the CUDA/MLX gap is smallest. Apple Silicon's unified memory architecture is a genuine advantage here -- a Mac Studio with 192 GB can run models that simply do not fit on any consumer NVIDIA GPU. mlx-lm, the primary MLX library for language models, covers the most common architectures and workflows with a stable API. For a developer porting CUDA inference or fine-tuning code to MLX, the LLM domain is the most mature translation target in the MLX ecosystem.
+LLMs are where the CUDA/MLX gap is smallest. Apple Silicon's unified memory architecture is a genuine advantage here -- a Mac Studio with 192 GB can run models that simply do not fit on any consumer NVIDIA [GPU](../glossary.md#gpu). mlx-lm, the primary MLX library for language models, covers the most common architectures and workflows with a stable API. For a developer porting CUDA inference or fine-tuning code to MLX, the LLM domain is the most mature translation target in the MLX ecosystem.
 
 This page answers: what does each ecosystem offer for LLM inference, serving, and fine-tuning? Where does the gap matter for local development versus production? What is missing and what can be contributed?
 
@@ -18,7 +18,7 @@ This page answers: what does each ecosystem offer for LLM inference, serving, an
 
 CUDA's LLM inference ecosystem has stratified into layers based on use case: local/developer use, high-throughput API serving, and maximum-performance compiled inference.
 
-**llama.cpp** is the foundational local inference engine. Written in C++ with minimal dependencies, it runs on CPU, CUDA, and Metal (Apple GPU). Models are stored in GGUF format, which packages weights and metadata in a single file. llama.cpp pioneered k-bit quantization (Q4_K_M, Q6_K, and similar formats) as a practical way to run 7B-70B models on consumer hardware.
+**llama.cpp** is the foundational local inference engine. Written in C++ with minimal dependencies, it runs on [CPU](../glossary.md#cpu), CUDA, and [Metal](../glossary.md#metal) (Apple GPU). Models are stored in [GGUF](../glossary.md#gguf) format, which packages weights and metadata in a single file. llama.cpp pioneered k-bit quantization (Q4_K_M, Q6_K, and similar formats) as a practical way to run 7B-70B models on consumer hardware.
 
 ```
 LLAMA.CPP ARCHITECTURE
@@ -60,9 +60,9 @@ PAGED ATTENTION (vLLM)
   MLX equivalent: not implemented
 ```
 
-**TGI (Text Generation Inference)** is Hugging Face's serving framework. Supports continuous batching (rolling batch of requests rather than fixed-size batch), tensor parallelism across multiple GPUs, and quantized inference (GPTQ, AWQ). Used internally by Hugging Face's Inference API.
+**TGI (Text Generation [Inference](../glossary.md#inference))** is Hugging Face's serving framework. Supports continuous batching (rolling batch of requests rather than fixed-size batch), tensor parallelism across multiple GPUs, and quantized inference ([GPTQ](../glossary.md#gptq), AWQ). Used internally by Hugging Face's Inference API.
 
-**TensorRT-LLM** is NVIDIA's production inference framework. It compiles models into optimized TensorRT engines at deployment time. Supports speculative decoding, inflight batching, and INT8/FP8 quantization with calibration. Achieves the highest throughput of any CUDA inference framework, at the cost of requiring a compilation step and being NVIDIA-specific.
+**TensorRT-LLM** is NVIDIA's production inference framework. It compiles models into optimized TensorRT engines at deployment time. Supports speculative decoding, inflight batching, and [INT8](../glossary.md#int8)/FP8 quantization with calibration. Achieves the highest throughput of any CUDA inference framework, at the cost of requiring a compilation step and being NVIDIA-specific.
 
 **Ollama** wraps llama.cpp with a simple REST API, model management, and automatic backend detection (CUDA, Metal, or CPU). It is the most accessible entry point for local model serving. Because it uses llama.cpp under the hood, it runs on Apple Silicon via Metal without any MLX dependency.
 
@@ -96,7 +96,7 @@ CUDA SERVING STACK
 
 CUDA's fine-tuning ecosystem is built around Hugging Face:
 
-**PEFT (Parameter-Efficient Fine-Tuning)** implements LoRA, QLoRA, IA3, and other adapter methods. LoRA adds low-rank adapter matrices to frozen base model weights. QLoRA combines 4-bit quantized base weights with LoRA adapters, enabling fine-tuning of 65B+ models on a single 80 GB A100.
+**PEFT ([Parameter](../glossary.md#parameter)-Efficient Fine-Tuning)** implements LoRA, QLoRA, IA3, and other adapter methods. LoRA adds low-rank adapter matrices to frozen base model weights. QLoRA combines 4-bit quantized base weights with LoRA adapters, enabling fine-tuning of 65B+ models on a single 80 GB A100.
 
 ```
 QLORA TRAINING (CUDA)
@@ -294,19 +294,19 @@ The practical difference:
 | Capability | CUDA | MLX | Gap |
 |-----------|------|-----|-----|
 | **Tokens per second (7B model)** | 🟢 H100: ~2000 tok/s (vLLM batched); RTX 4090: ~100 tok/s single-user | 🟡 M3 Max: ~60-80 tok/s single-user; M2 Ultra: ~90 tok/s | Medium for single-user; large for batched serving. Per-token latency on Apple Silicon is comparable to RTX 4090; batched throughput is not. |
-| **Model coverage** | 🟢 All architectures (Transformers supports everything) | 🟡 Major architectures supported; new and niche models lag by days to weeks | Small for mainstream models; noticeable for new research models |
-| **Context length** | 🟢 Ring attention, sequence parallelism for very long contexts; Flash Attention 2 handles 100k+ tokens efficiently | 🟡 Long contexts work but are memory-bound; no ring attention equivalent | Medium -- 32k context is fine; 128k+ contexts can be slow or OOM on lower-memory configs |
+| **[Model](../glossary.md#model) coverage** | 🟢 All architectures (Transformers supports everything) | 🟡 Major architectures supported; new and niche models lag by days to weeks | Small for mainstream models; noticeable for new research models |
+| **Context length** | 🟢 Ring attention, sequence parallelism for very long contexts; [Flash Attention](../glossary.md#flash-attention) 2 handles 100k+ tokens efficiently | 🟡 Long contexts work but are memory-bound; no ring attention equivalent | Medium -- 32k context is fine; 128k+ contexts can be slow or OOM on lower-memory configs |
 | **Paged attention / production serving** | 🟢 vLLM paged attention: serves thousands of concurrent users on one H100 | 🔴 Not implemented; mlx_lm.server is single-user | Large -- MLX cannot serve concurrent users at scale; this is a fundamental gap for production API deployments |
 | **Speculative decoding** | 🟢 vLLM, TGI both support speculative decoding with draft models; 2-3x latency reduction on long outputs | 🟡 Experimental in mlx-lm; not stable | Medium -- reduces latency for long-generation tasks; useful for chatbots and code generation |
-| **Tensor parallelism (multi-device)** | 🟢 vLLM, TGI, TensorRT-LLM all support multi-GPU sharding | 🔴 Not supported -- MLX is single-device | Large for models > 70B at FP16; less critical with quantization |
-| **Quantization format compatibility** | 🟢 GPTQ, AWQ, GGUF, BitsAndBytes, TensorRT INT8/FP8 -- all interoperable with Transformers | 🟡 MLX 4-bit and 8-bit formats; GGUF via llama.cpp separately; not directly interchangeable | Medium -- MLX quantization works well; cannot load GPTQ/AWQ models directly |
+| **[Tensor](../glossary.md#tensor) parallelism (multi-device)** | 🟢 vLLM, TGI, TensorRT-LLM all support multi-GPU sharding | 🔴 Not supported -- MLX is single-device | Large for models > 70B at FP16; less critical with quantization |
+| **[Quantization](../glossary.md#quantization) format compatibility** | 🟢 GPTQ, AWQ, GGUF, BitsAndBytes, TensorRT INT8/FP8 -- all interoperable with Transformers | 🟡 MLX 4-bit and 8-bit formats; GGUF via llama.cpp separately; not directly interchangeable | Medium -- MLX quantization works well; cannot load GPTQ/AWQ models directly |
 | **Fine-tuning: LoRA** | 🟢 PEFT: full LoRA, QLoRA, DoRA, IA3; Axolotl pipelines; Unsloth optimized kernels | 🟡 mlx-lm LoRA and QLoRA: works well for instruction tuning; fewer optimizations | Small for basic fine-tuning; medium for large-scale or optimized training |
 | **Fine-tuning: full parameter** | 🟢 DeepSpeed ZeRO, FSDP, gradient checkpointing; 7B full fine-tuning on 4x A100 | 🟡 Possible for small models; no gradient checkpointing; no distributed | Large -- full fine-tuning at scale is not practical in MLX |
 | **Continuous batching** | 🟢 vLLM, TGI, TensorRT-LLM all implement continuous batching | 🔴 Not implemented in mlx-lm server | Large for production; irrelevant for personal/single-user use |
 | **Flash Attention** | 🟢 Flash Attention 2 kernel: optimal memory access pattern for attention, 8-16x memory reduction, ~2x speed | 🟡 MLX attention is memory-efficient via lazy eval + fusion, but not a direct port of FA2's tiling strategy | Medium -- MLX attention is good; extreme long-context edge cases are slower |
 | **Structured output / constrained generation** | 🟢 Outlines, guidance, LMQL -- schema-constrained generation via logit processing | 🟡 Basic logit processing in mlx-lm; no Outlines equivalent | Small -- manual logit processing is possible; no plug-in library |
 | **Model evaluation frameworks** | 🟢 lm-evaluation-harness, HELM, EleutherAI benchmarks -- CUDA native | 🟡 lm-evaluation-harness has partial MLX support; not all benchmarks run | Small -- major benchmarks runnable; some harness integrations missing |
-| **Embedding models** | 🟢 sentence-transformers, all architectures; fast batch embedding with CUDA | 🟡 BERT-class models work; no sentence-transformers MLX integration | Small -- embeddings work; less convenient tooling |
+| **[Embedding](../glossary.md#embedding) models** | 🟢 sentence-transformers, all architectures; fast batch embedding with CUDA | 🟡 BERT-class models work; no sentence-transformers MLX integration | Small -- embeddings work; less convenient tooling |
 | **MoE (Mixture of Experts) models** | 🟢 Mixtral, DeepSeek-MoE via Transformers; expert routing optimized in vLLM | 🟡 Mixtral and DeepSeek MoE supported in mlx-lm; expert routing not specially optimized | Medium -- supported but expert routing on Apple Silicon is not as tuned |
 
 ---

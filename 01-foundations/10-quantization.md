@@ -1,6 +1,6 @@
 # Quantization
 
-> **One-liner:** Quantization reduces a model's memory footprint and speeds up inference by representing weights with fewer bits (e.g., 4-bit instead of 16-bit), with minimal quality loss.
+> **One-liner:** [Quantization](../glossary.md#quantization) reduces a model's memory footprint and speeds up inference by representing weights with fewer bits (e.g., 4-bit instead of 16-bit), with minimal quality loss.
 
 ## The Intuition
 
@@ -145,7 +145,7 @@ MLX's `nn.QuantizedLinear` always uses group quantization. The default group siz
 
 ### PTQ vs. QAT: two approaches to quantizing a model
 
-**Post-Training Quantization (PTQ)** quantizes a model after training is complete. You take a trained float16 model, compute scales from its weights (sometimes passing a small calibration dataset through), and write out the quantized result. No retraining required. Fast and simple.
+**Post-[Training](../glossary.md#training) Quantization (PTQ)** quantizes a model after training is complete. You take a trained float16 model, compute scales from its weights (sometimes passing a small calibration dataset through), and write out the quantized result. No retraining required. Fast and simple.
 
 ```
 PTQ WORKFLOW
@@ -162,7 +162,7 @@ PTQ WORKFLOW
   (stored on disk, loaded for inference)
 ```
 
-PTQ is by far the most common approach in practice. It is what `mlx_lm.convert`, GPTQ, and AWQ all do (with varying sophistication in how they compute the optimal quantization).
+PTQ is by far the most common approach in practice. It is what `mlx_lm.convert`, [GPTQ](../glossary.md#gptq), and AWQ all do (with varying sophistication in how they compute the optimal quantization).
 
 **Quantization-Aware Training (QAT)** simulates quantization during training itself. The model is trained with fake quantization nodes inserted in the computation graph -- these round activations and weights to the quantized grid on the forward pass, then pass gradients through on the backward pass as if quantization never happened (the "straight-through estimator"). The model learns to be robust to the rounding that quantization introduces.
 
@@ -193,7 +193,7 @@ When you download a quantized model from Hugging Face or llama.cpp, it has a for
 
 **AWQ** (Lin et al., 2023): Activation-Weighted Quantization. The insight: not all weights in a tensor are equally important for accuracy. Weights connected to large activations matter more (they have bigger impact on the output). AWQ identifies these salient weights using activation statistics from a calibration dataset, then scales the weight distribution before quantization to protect the important values. Produces strong 4-bit accuracy. Common in Hugging Face models tagged `AWQ`.
 
-**GGUF**: A file format from llama.cpp (not a quantization algorithm itself). Packages model weights, tokenizer, and metadata into a single portable file. The quantization scheme is embedded in the filename: `Q4_K_M` means 4-bit, K-quant family, medium variant. K-quants are a family of mixed-precision schemes where some layers are stored at higher precision than others. GGUF models run on CPU via llama.cpp or on Apple Silicon via llama.cpp's Metal backend and the `mlx-lm` loader.
+**[GGUF](../glossary.md#gguf)**: A file format from llama.cpp (not a quantization algorithm itself). Packages model weights, tokenizer, and metadata into a single portable file. The quantization scheme is embedded in the filename: `Q4_K_M` means 4-bit, K-quant family, medium variant. K-quants are a family of mixed-precision schemes where some layers are stored at higher precision than others. GGUF models run on [CPU](../glossary.md#cpu) via llama.cpp or on Apple Silicon via llama.cpp's [Metal](../glossary.md#metal) backend and the `mlx-lm` loader.
 
 ```
 QUANTIZATION FORMAT CHEAT SHEET
@@ -318,7 +318,7 @@ QUANTIZEDLINEAR INTERNALS
     [output]
 ```
 
-The dequantization is fast -- a multiply-and-unpack that happens in the GPU compute units, not a separate memory operation. The key benefit is that the weights travel from unified memory to the GPU as 4-bit integers (half the bytes of float16), which reduces memory bandwidth pressure. Since LLM inference is bandwidth-bound (the weights are larger than the activations, and new weights must be loaded for every token), reducing weight size directly reduces latency.
+The dequantization is fast -- a multiply-and-unpack that happens in the [GPU](../glossary.md#gpu) compute units, not a separate memory operation. The key benefit is that the weights travel from unified memory to the GPU as 4-bit integers (half the bytes of float16), which reduces memory bandwidth pressure. Since LLM inference is bandwidth-bound (the weights are larger than the activations, and new weights must be loaded for every token), reducing weight size directly reduces latency.
 
 ### Scheme matching: the critical constraint
 
@@ -356,7 +356,7 @@ A common porting bug: loading a GPTQ model (group_size=128) with MLX's default (
 
 Not every layer in a model is quantized to the same bit width. Certain layers are more sensitive to quantization error:
 
-- **Embedding layers**: the first and last layers of an LLM. They map token IDs to vectors. Quantizing them aggressively loses vocabulary detail. Many models keep embeddings in float16.
+- **[Embedding](../glossary.md#embedding) layers**: the first and last layers of an LLM. They map token IDs to vectors. Quantizing them aggressively loses vocabulary detail. Many models keep embeddings in float16.
 - **LM head**: the final projection from hidden state to vocabulary logits. Closely related to embeddings; often kept at float16.
 - **Small layers**: normalization layers (RMSNorm, LayerNorm) have very few parameters. Quantizing them saves almost no memory but can hurt accuracy significantly. Usually kept at float16.
 
@@ -439,25 +439,25 @@ This is not a hypothetical. The `mlx-community` organization maintains 4-bit qua
 |------|------------|
 | **Quantization** | The process of representing model weights (and sometimes activations) with fewer bits than their original training format, trading precision for reduced memory and faster inference. |
 | **FP32 (float32)** | 32-bit floating point. The standard precision for training. 4 bytes per value. Full range and precision, but expensive in memory. |
-| **FP16 (float16)** | 16-bit floating point. 2 bytes per value. Reduced range (max ~65,000); higher precision near zero than bfloat16. Common in CUDA inference. |
+| **FP16 (float16)** | 16-bit floating point. 2 bytes per value. Reduced range (max ~65,000); higher precision near zero than bfloat16. Common in [CUDA](../glossary.md#cuda) inference. |
 | **BF16 (bfloat16)** | "Brain float 16." 16-bit floating point with the same exponent range as float32 but reduced mantissa precision. 2 bytes per value. MLX's default dtype; preferred for training because it handles large gradients without overflow. |
-| **INT8** | 8-bit integer. 1 byte per value, 256 possible levels. Requires a scale factor to map the integer range to the float range. Common for inference quantization. |
-| **INT4** | 4-bit integer. 0.5 bytes per value, 16 possible levels. Standard for aggressive LLM quantization; 4-bit is the practical lower limit before quality degrades significantly. |
+| **[INT8](../glossary.md#int8)** | 8-bit integer. 1 byte per value, 256 possible levels. Requires a scale factor to map the integer range to the float range. Common for inference quantization. |
+| **[INT4](../glossary.md#int4)** | 4-bit integer. 0.5 bytes per value, 16 possible levels. Standard for aggressive LLM quantization; 4-bit is the practical lower limit before quality degrades significantly. |
 | **PTQ (Post-Training Quantization)** | Quantizing a model after training is complete. No retraining required. The dominant approach for model distribution and inference optimization. |
 | **QAT (Quantization-Aware Training)** | Simulating quantization during training so the model learns to compensate for precision loss. Produces better accuracy than PTQ at the same bit width, but requires a training run. |
 | **GPTQ** | A PTQ algorithm that uses second-order (Hessian) information to minimize output error when quantizing, layer by layer. Better accuracy than naive rounding at 4-bit. |
 | **AWQ (Activation-Weighted Quantization)** | A PTQ algorithm that identifies salient weights using activation statistics and scales the weight distribution before quantization to protect them. Strong 4-bit accuracy. |
 | **GGUF** | A file format from llama.cpp that packages model weights, tokenizer, and metadata into a single portable file. Not a quantization algorithm; embeds the quantization scheme in the filename (e.g., Q4_K_M). |
-| **Group Size** | The number of consecutive weights that share a single scale factor in group quantization. Smaller group size = more scales = better accuracy = slightly more memory overhead. Common values: 32, 64, 128. |
-| **Scale Factor** | The float value stored alongside quantized weights that maps the integer range back to the approximate float range. One scale per group in group quantization. |
-| **Dequantization** | The operation of converting quantized integer weights back to approximate float values at inference time, by multiplying the stored integer by the stored scale factor. |
-| **Mixed Precision** | Using different bit widths for different layers in the same model. Typically: attention and FFN layers at 4-bit; embedding, normalization, and output layers at float16. |
+| **[Group Size](../glossary.md#group-size)** | The number of consecutive weights that share a single scale factor in group quantization. Smaller group size = more scales = better accuracy = slightly more memory overhead. Common values: 32, 64, 128. |
+| **[Scale Factor](../glossary.md#scale-factor)** | The float value stored alongside quantized weights that maps the integer range back to the approximate float range. One scale per group in group quantization. |
+| **[Dequantization](../glossary.md#dequantization)** | The operation of converting quantized integer weights back to approximate float values at inference time, by multiplying the stored integer by the stored scale factor. |
+| **[Mixed Precision](../glossary.md#mixed-precision)** | Using different bit widths for different layers in the same model. Typically: attention and FFN layers at 4-bit; embedding, normalization, and output layers at float16. |
 
 
 ## Sources
 
 - Frantar, E., Ashkboos, S., Hoefler, T., & Alistarh, D. (2022). "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers." *ICLR 2023*. Introduces the second-order PTQ algorithm behind GPTQ. Available at [arxiv.org/abs/2210.17323](https://arxiv.org/abs/2210.17323)
-- Lin, J., Tang, J., Tang, H., Yang, S., Chen, W., Wang, W., & Han, S. (2023). "AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration." *MLSys 2024*. Introduces AWQ's salient weight identification technique. Available at [arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
+- Lin, J., Tang, J., Tang, H., Yang, S., Chen, W., Wang, W., & Han, S. (2023). "AWQ: Activation-aware [Weight](../glossary.md#weight) Quantization for LLM Compression and Acceleration." *MLSys 2024*. Introduces AWQ's salient weight identification technique. Available at [arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
 - MLX Documentation. "Quantization" and `mlx.nn.QuantizedLinear` reference. Covers MLX's group quantization implementation, `nn.QuantizedLinear`, and `mlx_lm.convert`. Available at [ml-explore.github.io/mlx/build/html/python/nn.html](https://ml-explore.github.io/mlx/build/html/python/nn.html)
 - Gerganov, G. et al. llama.cpp and the GGUF format. The reference implementation for GGUF quantization, including the K-quant family (Q4_K_M, Q5_K_S, etc.). Available at [github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp)
 

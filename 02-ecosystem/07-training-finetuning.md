@@ -1,10 +1,10 @@
 # Training / Fine-tuning: CUDA vs MLX
 
-> **Status:** 🟢 CUDA (Mature -- full training stack, distributed, every scale) | 🟡 MLX (Limited -- LoRA/QLoRA for LLMs; no distributed, no full pretraining at scale)
+> **Status:** 🟢 [CUDA](../glossary.md#cuda) (Mature -- full training stack, distributed, every scale) | 🟡 MLX (Limited -- LoRA/QLoRA for LLMs; no distributed, no full pretraining at scale)
 
 ## What This Domain Covers
 
-Training a model from random initialization, and fine-tuning a pre-trained model to a new task or dataset. This includes the full pipeline: data loading and preprocessing, training loop infrastructure, optimizer algorithms, gradient management, experiment tracking, and checkpoint handling. It covers both parameter-efficient methods (LoRA, QLoRA) and full-parameter training.
+[Training](../glossary.md#training) a model from random initialization, and fine-tuning a pre-trained model to a new task or dataset. This includes the full pipeline: data loading and preprocessing, training loop infrastructure, optimizer algorithms, gradient management, experiment tracking, and checkpoint handling. It covers both parameter-efficient methods (LoRA, QLoRA) and full-parameter training.
 
 Training is where the gap between CUDA and MLX is largest. MLX's inference story is strong. MLX's training story -- specifically anything beyond fine-tuning a single LLM on a single Mac -- is limited by the absence of distributed training, mature gradient checkpointing, mixed-precision infrastructure, and the broad ecosystem of tools that CUDA has accumulated over a decade of large-scale training.
 
@@ -20,7 +20,7 @@ CUDA's training ecosystem handles every scale point, from a single RTX 4090 to t
 
 **PyTorch** provides the foundation: autograd, optimizers, `DataLoader`, gradient clipping, and `torch.compile` for kernel fusion. Every training framework in the CUDA ecosystem is built on top of PyTorch.
 
-**FSDP (FullyShardedDataParallel)** is PyTorch's built-in distributed training strategy. It shards model parameters, gradients, and optimizer states across GPUs, enabling training of models that do not fit in a single GPU's VRAM. Each GPU holds a shard; during the forward pass, shards are all-gathered on demand, used, and immediately discarded.
+**FSDP (FullyShardedDataParallel)** is PyTorch's built-in distributed training strategy. It shards model parameters, gradients, and optimizer states across GPUs, enabling training of models that do not fit in a single [GPU](../glossary.md#gpu)'s [VRAM](../glossary.md#vram). Each GPU holds a shard; during the forward pass, shards are all-gathered on demand, used, and immediately discarded.
 
 ```
 FSDP MEMORY MODEL
@@ -40,7 +40,7 @@ FSDP MEMORY MODEL
   Replaced DistributedDataParallel (DDP) for large models.
 ```
 
-**DeepSpeed** (Microsoft) is the dominant framework for large-scale distributed training. Its ZeRO optimizer (Zero Redundancy Optimizer) has three stages:
+**DeepSpeed** (Microsoft) is the dominant framework for large-scale distributed training. Its ZeRO optimizer (Zero Redundancy [Optimizer](../glossary.md#optimizer)) has three stages:
 
 ```
 DEEPSPEED ZERO STAGES
@@ -163,7 +163,7 @@ FINE-TUNING TOOL COMPARISON (CUDA)
 
 ### Dataset Tools
 
-**Hugging Face Datasets** is the standard library for ML datasets. Streaming from disk or cloud without loading into RAM, automatic caching, built-in preprocessing transforms, and thousands of pre-loaded datasets on the Hub. Both CPU preprocessing and GPU-side augmentations are supported.
+**Hugging Face Datasets** is the standard library for ML datasets. Streaming from disk or cloud without loading into RAM, automatic caching, built-in preprocessing transforms, and thousands of pre-loaded datasets on the Hub. Both [CPU](../glossary.md#cpu) preprocessing and GPU-side augmentations are supported.
 
 **WebDataset** handles web-scale image/video/text datasets stored as tar shards. Supports streaming from cloud storage (S3, GCS) with multi-worker prefetching. Used for training image generation models at scale.
 
@@ -289,8 +289,8 @@ mlx-lm is the most complete MLX training implementation. It covers parameter-eff
 **What mlx-lm LoRA covers:**
 - LoRA adapters on attention projection layers (q, k, v, o projections)
 - QLoRA: 4-bit quantized base model with FP16/BF16 LoRA adapters
-- DoRA: Weight decomposition LoRA (experimental)
-- Gradient accumulation via the `--grad-checkpoint` flag (limited)
+- DoRA: [Weight](../glossary.md#weight) decomposition LoRA (experimental)
+- [Gradient](../glossary.md#gradient) accumulation via the `--grad-checkpoint` flag (limited)
 - Adapter merging: merge adapters back into base model weights
 
 **What mlx-lm LoRA does not cover:**
@@ -378,11 +378,11 @@ W&B and MLflow are Python libraries and technically work with MLX, but there is 
 | **DPO / RLHF / alignment training** | 🟢 TRL (Hugging Face): PPO, DPO, GRPO, reward modeling; widely used | 🔴 No equivalent; would require building from scratch in MLX | Large for alignment work; irrelevant for standard fine-tuning |
 | **Optimizer variety** | 🟢 All standard optimizers + LAMB, Sophia, Muon; optimizer state sharding | 🟡 Standard optimizers available; no LAMB or experimental optimizers | Small for most use cases |
 | **Experiment tracking** | 🟢 W&B, MLflow, TensorBoard; native integrations in Transformers, Axolotl | 🟡 Manual integration only; no official W&B/MLflow hooks | Medium -- works with manual logging; not ergonomic |
-| **Hyperparameter search** | 🟢 W&B Sweeps, Optuna, Ray Tune; distributed search across GPUs | 🟡 Python libraries work; no MLX-aware distributed search | Small -- single-machine search works; distributed HPO not possible |
+| **[Hyperparameter](../glossary.md#hyperparameter) search** | 🟢 W&B Sweeps, Optuna, Ray Tune; distributed search across GPUs | 🟡 Python libraries work; no MLX-aware distributed search | Small -- single-machine search works; distributed HPO not possible |
 | **Dataset infrastructure** | 🟢 Hugging Face Datasets: streaming, caching, maps, multi-worker; WebDataset for sharded data | 🟡 No native MLX data loader; use PyTorch DataLoader + numpy conversion or manual | Medium -- workaround works; not ergonomic; multi-worker prefetch awkward |
 | **Training pipeline tools** | 🟢 Axolotl, LLaMA-Factory, Torchtune: YAML configs, dataset formatting, eval hooks | 🟡 mlx-lm covers LLM fine-tuning; nothing comparable for other domains | Large for non-LLM training (vision, audio, custom architectures) |
-| **Checkpoint management** | 🟢 Transformers/Axolotl: automatic checkpointing, resumable training, safetensors | 🟡 mlx-lm saves adapters; full checkpoint management is manual | Medium -- saving works; resumable training with optimizer state is not ergonomic |
-| **Model parallelism** | 🟢 Megatron-LM tensor + pipeline parallelism; training models too large for any single GPU | 🔴 Not supported | Large for frontier models; irrelevant for fine-tuning on consumer hardware |
+| **[Checkpoint](../glossary.md#checkpoint) management** | 🟢 Transformers/Axolotl: automatic checkpointing, resumable training, safetensors | 🟡 mlx-lm saves adapters; full checkpoint management is manual | Medium -- saving works; resumable training with optimizer state is not ergonomic |
+| **[Model](../glossary.md#model) parallelism** | 🟢 Megatron-LM tensor + pipeline parallelism; training models too large for any single GPU | 🔴 Not supported | Large for frontier models; irrelevant for fine-tuning on consumer hardware |
 | **Multi-node training** | 🟢 Standard: PyTorch distributed, NCCL, InfiniBand; scales linearly | 🔴 Not supported | Large for large-scale pretraining; irrelevant for single-Mac use |
 | **Training throughput (tokens/sec)** | 🟢 H100: ~15,000 tok/s for 7B training; RTX 4090: ~2,000 tok/s | 🟡 M3 Max: ~200-400 tok/s for 7B training; M2 Ultra: ~400-600 tok/s | Large raw throughput gap; Apple Silicon is ~5-10x slower for training vs RTX 4090 |
 
@@ -390,7 +390,7 @@ W&B and MLflow are Python libraries and technically work with MLX, but there is 
 
 ## Contribution Opportunities
 
-**Distributed training via Apple Thunderbolt/networking.** The most impactful missing feature. MLX's single-device constraint means a Mac Studio (192 GB) is the ceiling. Implementing data-parallel training across multiple Macs via NCCL-style collective communication (all-reduce, broadcast) would let users scale beyond a single device. Apple's Metal does not have a native collective communication library; this would require building one.
+**Distributed training via Apple Thunderbolt/networking.** The most impactful missing feature. MLX's single-device constraint means a Mac Studio (192 GB) is the ceiling. Implementing data-parallel training across multiple Macs via NCCL-style collective communication (all-reduce, broadcast) would let users scale beyond a single device. Apple's [Metal](../glossary.md#metal) does not have a native collective communication library; this would require building one.
 
 **PyTorch DataLoader bridge with zero-copy.** Currently, the cleanest way to load data for MLX training is: PyTorch DataLoader (for multi-worker prefetch, augmentation) -> numpy arrays -> `mx.array(batch)`. The numpy conversion copies data. A first-class bridge that uses shared memory or avoids copies would make data loading faster and more ergonomic.
 

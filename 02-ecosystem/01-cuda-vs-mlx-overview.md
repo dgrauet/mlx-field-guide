@@ -1,6 +1,6 @@
 # Platform: CUDA vs MLX
 
-> **Status:** 🟢 CUDA (Mature -- 15+ years, industry standard) | 🟡 MLX (Emerging -- December 2023)
+> **Status:** 🟢 [CUDA](../glossary.md#cuda) (Mature -- 15+ years, industry standard) | 🟡 MLX (Emerging -- December 2023)
 
 ## What This Domain Covers
 
@@ -16,7 +16,7 @@ CUDA (Compute Unified Device Architecture) is NVIDIA's parallel computing platfo
 
 ### Hardware
 
-NVIDIA's GPU lineup spans consumer to data center:
+NVIDIA's [GPU](../glossary.md#gpu) lineup spans consumer to data center:
 
 ```
 NVIDIA GPU HARDWARE (2024)
@@ -45,7 +45,7 @@ NVIDIA GPU HARDWARE (2024)
     Azure: NCv4 (A100), NDv5 (H100) series
 ```
 
-**The key constraint on NVIDIA hardware: VRAM is a hard ceiling.** A model that does not fit in the GPU's VRAM cannot run on that GPU, period. You cannot use system RAM as an overflow pool at any useful speed (PCIe bandwidth is roughly 64 GB/s, whereas the H100's HBM3 bandwidth is 3.35 TB/s -- a 50x difference).
+**The key constraint on NVIDIA hardware: [VRAM](../glossary.md#vram) is a hard ceiling.** A model that does not fit in the GPU's VRAM cannot run on that GPU, period. You cannot use system RAM as an overflow pool at any useful speed (PCIe bandwidth is roughly 64 GB/s, whereas the H100's HBM3 bandwidth is 3.35 TB/s -- a 50x difference).
 
 ### Software Stack
 
@@ -94,7 +94,7 @@ MLX is Apple's open-source array framework for machine learning on Apple Silicon
 
 ### Hardware
 
-Apple Silicon is a family of chips where CPU, GPU, Neural Engine, and memory are on a single package:
+Apple Silicon is a family of chips where [CPU](../glossary.md#cpu), GPU, Neural Engine, and memory are on a single package:
 
 ```
 APPLE SILICON HARDWARE (2024)
@@ -211,13 +211,13 @@ loss, grads = mx.value_and_grad(loss_fn)(params, x)
 | **Community size** | 🟢 Millions of developers, 15+ years of content | 🟡 Growing, thousands of active contributors | Orders of magnitude smaller; fewer examples, answers, tutorials |
 | **Documentation** | 🟢 Exhaustive at every level | 🟡 Good core docs; thin on advanced topics | Noticeable gap in advanced kernel writing, custom ops |
 | **Pre-trained models** | 🟢 Tens of thousands on Hugging Face | 🟡 1000+ on mlx-community; growing | CUDA models run as-is; MLX requires conversion |
-| **Custom kernel writing** | 🟢 CUDA C++, Triton (Python), extensive tooling | 🟡 Metal Shading Language; fewer examples | Steep learning curve for custom Metal kernels; no Triton equivalent |
-| **Inference performance (LLMs)** | 🟢 Fastest per-token on H100/A100 | 🟡 Competitive on Apple Silicon for its class | H100 is faster; Apple Silicon wins on memory capacity per dollar |
-| **Training support** | 🟢 Full: large batch, gradient checkpointing, mixed precision, distributed | 🟡 Basic: works for fine-tuning; limited for large-scale pretraining | MLX LoRA fine-tuning works well; pretraining at scale is difficult |
-| **Serving / production inference** | 🟢 vLLM, TGI, Triton Inference Server, TensorRT | 🟡 mlx-lm server mode, llama.cpp (GGUF) | No equivalent to vLLM's paged attention for production serving |
+| **Custom kernel writing** | 🟢 CUDA C++, Triton (Python), extensive tooling | 🟡 [Metal](../glossary.md#metal) Shading Language; fewer examples | Steep learning curve for custom Metal kernels; no Triton equivalent |
+| **[Inference](../glossary.md#inference) performance (LLMs)** | 🟢 Fastest per-token on H100/A100 | 🟡 Competitive on Apple Silicon for its class | H100 is faster; Apple Silicon wins on memory capacity per dollar |
+| **[Training](../glossary.md#training) support** | 🟢 Full: large batch, gradient checkpointing, mixed precision, distributed | 🟡 Basic: works for fine-tuning; limited for large-scale pretraining | MLX LoRA fine-tuning works well; pretraining at scale is difficult |
+| **Serving / production inference** | 🟢 vLLM, TGI, Triton Inference Server, TensorRT | 🟡 mlx-lm server mode, llama.cpp ([GGUF](../glossary.md#gguf)) | No equivalent to vLLM's paged attention for production serving |
 | **Profiling and debugging tools** | 🟢 Nsight, nvprof, PyTorch profiler, rich ecosystem | 🟡 Instruments (Apple), `mx.metal.get_peak_memory()` | Instruments is powerful but less ML-specific than Nsight |
-| **Quantization support** | 🟢 BitsAndBytes, GPTQ, AWQ, TensorRT INT8 | 🟡 4-bit and 8-bit via `nn.QuantizedLinear`; `mlx_lm.convert` | MLX covers the inference use case well; training-time quantization thin |
-| **Video generation (e.g., LTX-Video)** | 🟢 Reference implementations, CUDA-optimized kernels | 🟡 Early ports (Matrix-Game-mlx, partial LTX ports) | Active area; custom temporal attention kernels not yet optimized |
+| **[Quantization](../glossary.md#quantization) support** | 🟢 BitsAndBytes, [GPTQ](../glossary.md#gptq), AWQ, TensorRT [INT8](../glossary.md#int8) | 🟡 4-bit and 8-bit via `nn.QuantizedLinear`; `mlx_lm.convert` | MLX covers the inference use case well; training-time quantization thin |
+| **Video generation (e.g., LTX-Video)** | 🟢 Reference implementations, CUDA-optimized kernels | 🟡 Early ports ([Matrix](../glossary.md#matrix)-Game-mlx, partial LTX ports) | Active area; custom temporal attention kernels not yet optimized |
 | **Windows / Linux support** | 🟢 Full | 🔴 None (Apple Silicon = macOS only) | Hard constraint; MLX does not run on non-Apple hardware |
 
 ---
@@ -230,7 +230,7 @@ The gap analysis above identifies where MLX needs work. If you are porting CUDA 
 
 **Benchmark and profiling tooling.** MLX has `mx.metal.get_peak_memory()` and Instruments, but no equivalent to PyTorch's `torch.profiler` or NVIDIA's Nsight Systems for kernel-level ML profiling. A profiling utility built specifically for MLX workloads would be valuable.
 
-**Model conversion pipelines.** mlx-community has 1000+ models, but not all model architectures are covered. Systematic conversion of missing architectures (especially video models) with validation tooling would help.
+**[Model](../glossary.md#model) conversion pipelines.** mlx-community has 1000+ models, but not all model architectures are covered. Systematic conversion of missing architectures (especially video models) with validation tooling would help.
 
 **Documentation: advanced topics.** Core MLX operations are documented. Writing custom Metal kernels with MLX's C++ extension API is not. Contributions here compound -- good docs help every future porter.
 

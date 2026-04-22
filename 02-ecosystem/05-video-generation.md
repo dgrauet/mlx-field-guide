@@ -1,6 +1,6 @@
 # Video Generation: CUDA vs MLX
 
-> **Status:** 🟡 CUDA (Emerging -- core models work, tooling maturing fast) | 🔴 MLX (Early -- pioneer territory; ltx-2-mlx is the only full-featured port)
+> **Status:** 🟡 [CUDA](../glossary.md#cuda) (Emerging -- core models work, tooling maturing fast) | 🔴 MLX (Early -- pioneer territory; ltx-2-mlx is the only full-featured port)
 
 ## What This Domain Covers
 
@@ -47,7 +47,7 @@ IMAGE vs VIDEO: WHAT CHANGES
 
 ### LTX-Video (Lightricks)
 
-LTX-Video is a DiT-based (Diffusion Transformer) video generation model using flow matching. It is notable for being the fastest high-quality open video model at release (Q4 2024), and for the active open-source ecosystem around it.
+LTX-Video is a DiT-based ([Diffusion](../glossary.md#diffusion) [Transformer](../glossary.md#transformer)) video generation model using flow matching. It is notable for being the fastest high-quality open video model at release (Q4 2024), and for the active open-source ecosystem around it.
 
 ```
 LTX-VIDEO ARCHITECTURE
@@ -217,7 +217,7 @@ CUDA VIDEO GENERATION TOOLING (2025)
   start that image generation had.
 ```
 
-**AnimateDiff** deserves special mention: it is not a standalone video model but an adapter that adds temporal consistency to image diffusion models (SD1.5, SDXL). It inserts temporal attention layers into an existing U-Net, allowing the large SD1.5 LoRA and fine-tune ecosystem to generate animated sequences. This made video generation accessible before purpose-built video models existed.
+**AnimateDiff** deserves special mention: it is not a standalone video model but an adapter that adds temporal consistency to image diffusion models (SD1.5, SDXL). It inserts temporal attention layers into an existing [U-Net](../glossary.md#u-net), allowing the large SD1.5 LoRA and fine-tune ecosystem to generate animated sequences. This made video generation accessible before purpose-built video models existed.
 
 ```
 ANIMATEDIFF (CUDA)
@@ -559,11 +559,11 @@ VIDEO MODEL MEMORY: CUDA vs APPLE SILICON
 | **Maximum resolution** | 🟢 HunyuanVideo: native 720p; tiling for 1080p | 🟡 ltx-2-mlx: 768x512 native; higher res untested | Medium -- for most use cases 768x512 is sufficient; high-res video needs other models |
 | **Maximum duration / frame count** | 🟢 Wan: 81+ frames; HunyuanVideo: 10+ seconds | 🟡 ltx-2-mlx: 97 frames (LTX-Video limit); ~5-6 seconds at 24fps | Medium -- ltx-2-mlx matches LTX-Video's native limit; other models offer longer clips |
 | **Temporal consistency** | 🟢 Purpose-built models (Wan, HunyuanVideo) have strong consistency | 🟡 LTX-Video has good but not best-in-class consistency | Medium -- LTX-Video is fast but Wan 14B has better quality; no MLX port of Wan |
-| **Quantization** | 🟢 GPTQ, AWQ, FP8 in diffusers; community quantized models | 🟡 4-bit MLX quantization in ltx-2-mlx; format-specific | Medium -- MLX quantization works; fewer community quantized video models |
+| **[Quantization](../glossary.md#quantization)** | 🟢 [GPTQ](../glossary.md#gptq), AWQ, FP8 in diffusers; community quantized models | 🟡 4-bit MLX quantization in ltx-2-mlx; format-specific | Medium -- MLX quantization works; fewer community quantized video models |
 | **Video-to-video / stylization** | 🟢 CogVideoX-I2V, Wan-I2V, img2vid strength control | 🔴 Not implemented in MLX | Large -- video-to-video is a common workflow; no MLX equivalent |
 | **ControlNet for video** | 🟢 Experimental in CUDA (AnimateDiff + ControlNet); depth/pose control | 🔴 Not implemented in MLX | Large -- structural control of video generation has no MLX equivalent |
-| **Video upscaling / frame interpolation** | 🟢 RIFE, FILM for frame interpolation; Real-ESRGAN for upscaling | 🔴 No MLX equivalents | Medium -- these are post-processing tools; CPU fallback is possible |
-| **Model memory (large models)** | 🟡 Large models (HunyuanVideo 13B, Wan 14B) require A100/H100 at full precision | 🟢 Apple Silicon unified memory: Wan 14B at BF16 runs on M3 Max 128GB | Inverted -- MLX has the memory advantage for very large models that CUDA struggles with on consumer hardware |
+| **Video upscaling / frame interpolation** | 🟢 RIFE, FILM for frame interpolation; Real-ESRGAN for upscaling | 🔴 No MLX equivalents | Medium -- these are post-processing tools; [CPU](../glossary.md#cpu) fallback is possible |
+| **[Model](../glossary.md#model) memory (large models)** | 🟡 Large models (HunyuanVideo 13B, Wan 14B) require A100/H100 at full precision | 🟢 Apple Silicon unified memory: Wan 14B at BF16 runs on M3 Max 128GB | Inverted -- MLX has the memory advantage for very large models that CUDA struggles with on consumer hardware |
 | **Streaming / real-time generation** | 🔴 Not yet possible; video gen is inherently batch-only, multi-step | 🔴 Same -- neither ecosystem has this yet | None -- neither ecosystem has this; future research direction |
 
 ---
@@ -617,7 +617,7 @@ VIDEO GENERATION PERFORMANCE (approximate, 2025)
 
 **Wan-1.3B MLX port.** The single most impactful contribution to the MLX video ecosystem. Wan-1.3B is the current state-of-the-art open video model at small scale. At 1.3B parameters, it is practical to run even on lower-memory Apple Silicon (M1 Pro 16GB with 4-bit quantization). The architecture -- a DiT with a causal 3D VAE and umt5-xxl text conditioning -- is similar to LTX-Video and CogVideoX, so ltx-2-mlx provides a useful reference for the port. This would immediately give MLX users access to the best-quality open video model currently available.
 
-**Wan-14B MLX port.** The follow-on from the 1.3B port. Wan-14B at BF16 is approximately 28GB -- comfortable on M3 Max 128GB and M2 Ultra 192GB. On these machines, it would produce better quality video than is achievable on any consumer CUDA GPU (which cannot fit 28GB at full precision). This is a genuine competitive advantage for Apple Silicon that only a MLX port can unlock.
+**Wan-14B MLX port.** The follow-on from the 1.3B port. Wan-14B at BF16 is approximately 28GB -- comfortable on M3 Max 128GB and M2 Ultra 192GB. On these machines, it would produce better quality video than is achievable on any consumer CUDA [GPU](../glossary.md#gpu) (which cannot fit 28GB at full precision). This is a genuine competitive advantage for Apple Silicon that only a MLX port can unlock.
 
 **CogVideoX MLX port.** CogVideoX-2B is a practical target: 2B parameters, full diffusers integration (useful as reference), and a distinctive 3D VAE design that is architecturally interesting to port. The 3D VAE's temporal compression approach differs from LTX-Video's, so porting it would add architectural diversity to the MLX video ecosystem.
 
@@ -645,7 +645,7 @@ VIDEO GENERATION PERFORMANCE (approximate, 2025)
 - Hugging Face diffusers (video pipelines): [github.com/huggingface/diffusers](https://github.com/huggingface/diffusers). The canonical CUDA video generation library; LTXVideoPipeline, CogVideoXPipeline, WanPipeline, HunyuanVideoPipeline.
 - AnimateDiff (Guo et al., 2023): "AnimateDiff: Animate Your Personalized Text-to-Image Diffusion Models without Specific Tuning." The foundational paper for temporal modules in image diffusion.
 - RIFE (Huang et al., 2022): "Real-Time Intermediate Flow Estimation for Video Frame Interpolation." Reference for frame interpolation post-processing.
-- Matrix-Game-mlx (developer's project, in development): Extends video generation toward interactive world modeling on Apple Silicon.
+- [Matrix](../glossary.md#matrix)-Game-mlx (developer's project, in development): Extends video generation toward interactive world modeling on Apple Silicon.
 
 ---
 

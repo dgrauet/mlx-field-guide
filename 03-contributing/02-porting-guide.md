@@ -1,6 +1,6 @@
 # Porting Guide: CUDA to MLX
 
-> **The practical guide for translating a PyTorch/CUDA model to MLX.** This page is organized as a step-by-step process with real code. If you are porting LTX-Video, Matrix-Game, or any similar CUDA-based generative model, start here.
+> **The practical guide for translating a PyTorch/[CUDA](../glossary.md#cuda) model to MLX.** This page is organized as a step-by-step process with real code. If you are porting LTX-Video, [Matrix](../glossary.md#matrix)-Game, or any similar CUDA-based generative model, start here.
 
 ## The Process at a Glance
 
@@ -79,15 +79,15 @@ print("Reference output sample:", out[0, 0, :5].numpy())
 
 Read the source model's code before writing MLX code. Look for:
 
-1. **Layer types used.** Are there standard layers (Linear, LayerNorm, MultiheadAttention) or custom CUDA extensions?
+1. **[Layer](../glossary.md#layer) types used.** Are there standard layers (Linear, LayerNorm, MultiheadAttention) or custom CUDA extensions?
 
-2. **Tensor layouts.** Does the model use NCHW (channels-first) or NHWC (channels-last) for convolutions? Does it reshape between them? What are the actual tensor shapes at each stage?
+2. **[Tensor](../glossary.md#tensor) layouts.** Does the model use NCHW (channels-first) or NHWC (channels-last) for convolutions? Does it reshape between them? What are the actual tensor shapes at each stage?
 
 3. **Custom operations.** Look for:
    - `torch.ops.custom.*` calls
    - Imports from `.so` files (compiled CUDA extensions)
    - Functions decorated with `@torch.jit.script`
-   - `flash_attn` imports (Flash Attention custom kernels)
+   - `flash_attn` imports ([Flash Attention](../glossary.md#flash-attention) custom kernels)
    - `rotary_emb` or positional embedding custom kernels
 
 4. **Data types.** Does the model require bfloat16 explicitly? Are there mixed-precision sections?
@@ -118,7 +118,7 @@ for name, line in custom_ops:
     print(f"[{name}] {line}")
 ```
 
-Custom ops are the hard part of a port. Standard layers translate mechanically. Custom CUDA kernels require a decision: decompose, rewrite in Metal, or accept a performance cost. This decision should happen at Step 2, not midway through the port.
+Custom ops are the hard part of a port. Standard layers translate mechanically. Custom CUDA kernels require a decision: decompose, rewrite in [Metal](../glossary.md#metal), or accept a performance cost. This decision should happen at Step 2, not midway through the port.
 
 ---
 
@@ -390,7 +390,7 @@ If the custom op is 5ms but the full forward pass is 2000ms, optimizing the cust
 
 ## Step 4: Convert the Weights
 
-Weight conversion is the part that breaks most ports. The architecture and the weights must agree on:
+[Weight](../glossary.md#weight) conversion is the part that breaks most ports. The architecture and the weights must agree on:
 - Key naming (the dictionary key for each weight tensor)
 - Tensor shape (including transpositions)
 - Data type
@@ -664,8 +664,8 @@ Common causes of mismatches and their fixes:
 - **Weight not transposed:** the shape matches accidentally but values are wrong -- check key mapping and any needed `mx.transpose` calls
 - **Wrong axis:** PyTorch `dim` vs MLX `axis` parameter; double-check calls to `softmax`, `concat`, `mean`, etc.
 - **NCHW vs NHWC:** the output shape is transposed compared to the input -- add the layout conversion
-- **Bias vs no bias:** `nn.Linear(bias=False)` vs `nn.Linear(bias=True)` -- the weight shape is the same but values differ
-- **Normalization stats:** BatchNorm has running statistics (`running_mean`, `running_var`) in addition to learned parameters; these must be loaded too
+- **[Bias](../glossary.md#bias) vs no bias:** `nn.Linear(bias=False)` vs `nn.Linear(bias=True)` -- the weight shape is the same but values differ
+- **[Normalization](../glossary.md#normalization) stats:** BatchNorm has running statistics (`running_mean`, `running_var`) in addition to learned parameters; these must be loaded too
 
 ---
 
@@ -675,7 +675,7 @@ A correct port is the goal. A fast port is the next step.
 
 ### mx.eval Placement
 
-MLX builds a computation graph lazily and only executes it when `mx.eval` is called. Every `mx.eval` call is a synchronization point -- the CPU waits for the GPU to finish. The rule: **fewer `mx.eval` calls = more work batched = better GPU utilization.**
+MLX builds a computation graph lazily and only executes it when `mx.eval` is called. Every `mx.eval` call is a synchronization point -- the [CPU](../glossary.md#cpu) waits for the [GPU](../glossary.md#gpu) to finish. The rule: **fewer `mx.eval` calls = more work batched = better GPU utilization.**
 
 ```python
 # BAD: too many synchronization points
@@ -791,7 +791,7 @@ A reference list of issues that break ports and how to diagnose them:
 | Output is all zeros or NaN from layer 1 | Weight not loaded; model using random init | Check that `load_weights` was called and returned no errors |
 | Output diverges after N layers | Accumulating floating-point error; mismatched norm | Compare layer-by-layer; check LayerNorm eps values match |
 | Correct results in float32, NaN in bfloat16 | Operation numerically unstable at lower precision | Add explicit float32 cast around the unstable op |
-| Model runs slower than expected | Too many forced execution calls serializing GPU work | Consolidate them; see mx.eval placement section |
+| [Model](../glossary.md#model) runs slower than expected | Too many forced execution calls serializing GPU work | Consolidate them; see mx.eval placement section |
 | Memory grows unbounded during inference | Intermediate arrays not freed; too-large graph | Force execution at stage boundaries; check for Python list accumulation |
 | Conv2d produces wrong results | NCHW/NHWC layout mismatch | Transpose inputs before conv and outputs after |
 | Attention scores overflow | QK^T values too large before softmax | Check that scaling by `1/sqrt(head_dim)` is present |

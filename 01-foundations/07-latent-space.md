@@ -4,7 +4,7 @@
 
 ## The Intuition
 
-You know from the Transformers and Attention pages that the model operates on vectors of numbers -- token embeddings, hidden states, patch representations. All of that is computation in a learned, compressed space. But when we talk about *latent space* in image and video generation, we mean something more specific: the practice of compressing raw pixel data into a much smaller grid of numbers before doing any of the expensive computation.
+You know from the Transformers and [Attention](../glossary.md#attention) pages that the model operates on vectors of numbers -- token embeddings, hidden states, patch representations. All of that is computation in a learned, compressed space. But when we talk about *latent space* in image and video generation, we mean something more specific: the practice of compressing raw pixel data into a much smaller grid of numbers before doing any of the expensive computation.
 
 ### The photo compression analogy
 
@@ -122,7 +122,7 @@ The encoder uses strided convolutions to shrink spatial dimensions while increas
 
 A plain autoencoder maps each input to a single point in latent space. The problem: the space between points is arbitrary. You can pick a point midway between two latents and the decoder has no idea what to do with it -- it was never trained on that point, so it produces garbage.
 
-A **Variational Autoencoder (VAE)** solves this by mapping each input to a *region* (a probability distribution) instead of a single point:
+A **Variational [Autoencoder](../glossary.md#autoencoder) (VAE)** solves this by mapping each input to a *region* (a probability distribution) instead of a single point:
 
 ```
 AUTOENCODER vs. VAE
@@ -185,7 +185,7 @@ The 4 latent channels are not the same as RGB channels -- they are learned abstr
 
 ### Latent diffusion: why this matters for generation
 
-The key insight of Stable Diffusion (and LTX-Video) is to run the entire diffusion process in latent space instead of pixel space:
+The key insight of Stable [Diffusion](../glossary.md#diffusion) (and LTX-Video) is to run the entire diffusion process in latent space instead of pixel space:
 
 ```
 LATENT DIFFUSION MODEL PIPELINE
@@ -267,11 +267,11 @@ The VAE decoder is the last thing that runs. Its output quality determines wheth
 
 ### VAE is often the easiest component to port
 
-When porting from CUDA to MLX, the VAE encoder and decoder are typically simpler to port than the main transformer:
+When porting from [CUDA](../glossary.md#cuda) to MLX, the VAE encoder and decoder are typically simpler to port than the main transformer:
 
 - Standard convolution layers, no exotic ops
 - No attention masking complexity
-- Weight shapes are predictable (kernel_h x kernel_w x in_ch x out_ch)
+- [Weight](../glossary.md#weight) shapes are predictable (kernel_h x kernel_w x in_ch x out_ch)
 - Deterministic (no sampling during inference -- you run the encoder in "deterministic mode" using the mean, not a sample)
 
 The weight loading follows a direct pattern: convolutional layers and normalization layers, stacked in the encoder and decoder halves.
@@ -359,24 +359,24 @@ When debugging latent shapes in the LTX-Video MLX port, the key is tracking wher
 # output: [1, 9, 3, 768, 512]  (back to pixel space)
 ```
 
-Shape mismatches at the encode or decode boundary are one of the first things to check when integrating the VAE into the larger pipeline.
+[Shape](../glossary.md#shape) mismatches at the encode or decode boundary are one of the first things to check when integrating the VAE into the larger pipeline.
 
 
 ## Key Terms
 
 | Term | Definition |
 |------|------------|
-| **Latent Space** | The compressed, lower-dimensional space in which an encoder represents input data; semantically meaningful: nearby points represent similar inputs |
+| **[Latent Space](../glossary.md#latent-space)** | The compressed, lower-dimensional space in which an encoder represents input data; semantically meaningful: nearby points represent similar inputs |
 | **Latent** | A specific point or vector in latent space; the encoded representation of a single input (image, video, etc.) |
-| **Encoder** | The neural network component that maps high-dimensional input data (pixels) to a compact latent representation |
-| **Decoder** | The neural network component that maps a latent representation back to high-dimensional output (pixels); the inverse of the encoder |
+| **[Encoder](../glossary.md#encoder)** | The neural network component that maps high-dimensional input data (pixels) to a compact latent representation |
+| **[Decoder](../glossary.md#decoder)** | The neural network component that maps a latent representation back to high-dimensional output (pixels); the inverse of the encoder |
 | **Autoencoder** | A neural network with a bottleneck architecture that learns to compress input into a latent and reconstruct it; trained by minimizing reconstruction loss |
 | **VAE (Variational Autoencoder)** | An autoencoder where the encoder outputs a probability distribution (mean + variance) over latent space rather than a single point; trained with both reconstruction loss and KL divergence; produces smooth, interpolatable latent spaces |
-| **Reconstruction** | The decoded output of an autoencoder; a measure of how well the latent preserved the original input's information |
-| **KL Divergence** | In VAEs, a regularization term that pushes the learned latent distributions toward a standard normal; what makes the latent space organized and sample-able |
-| **Latent Dimensions** | The shape of the latent tensor; for image models typically (H/8 x W/8 x 4) or similar; for video models adds a temporal dimension |
-| **Latent Diffusion** | The technique of running the diffusion (noise addition and removal) process in latent space rather than pixel space; enables image/video generation at practical computational cost |
-| **Pixel Space** | The raw representation of an image as pixel values; high-dimensional and redundant; contrasted with latent space where information is compressed |
+| **[Reconstruction](../glossary.md#reconstruction)** | The decoded output of an autoencoder; a measure of how well the latent preserved the original input's information |
+| **[KL Divergence](../glossary.md#kl-divergence)** | In VAEs, a regularization term that pushes the learned latent distributions toward a standard normal; what makes the latent space organized and sample-able |
+| **[Latent Dimensions](../glossary.md#latent-dimensions)** | The shape of the latent tensor; for image models typically (H/8 x W/8 x 4) or similar; for video models adds a temporal dimension |
+| **[Latent Diffusion](../glossary.md#latent-diffusion)** | The technique of running the diffusion (noise addition and removal) process in latent space rather than pixel space; enables image/video generation at practical computational cost |
+| **[Pixel Space](../glossary.md#pixel-space)** | The raw representation of an image as pixel values; high-dimensional and redundant; contrasted with latent space where information is compressed |
 
 
 ## Sources

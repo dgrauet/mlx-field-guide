@@ -1,6 +1,6 @@
 # Tooling: CUDA vs MLX
 
-> **Status:** 🟢 CUDA (Mature -- comprehensive profiling, debugging, conversion, and benchmarking toolchain) | 🟡 MLX (Growing -- essential tools present; depth and integration significantly behind)
+> **Status:** 🟢 [CUDA](../glossary.md#cuda) (Mature -- comprehensive profiling, debugging, conversion, and benchmarking toolchain) | 🟡 MLX (Growing -- essential tools present; depth and integration significantly behind)
 
 ## What This Domain Covers
 
@@ -18,7 +18,7 @@ This page maps what exists in each ecosystem, where the gaps are, and what a con
 
 CUDA's profiling ecosystem gives developers visibility down to the hardware counter level. Understanding exactly which kernel ran, how many cycles it took, and whether memory access patterns were optimal is standard practice for CUDA performance work.
 
-**NVIDIA Nsight Systems** is the primary profiling tool for system-level analysis. It shows a timeline of CPU activity, GPU kernel execution, CUDA API calls, memory transfers, and thread activity. For a transformer training run, you can see precisely which kernels are running, when they start and stop, and how much of the GPU is utilized.
+**NVIDIA Nsight Systems** is the primary profiling tool for system-level analysis. It shows a timeline of [CPU](../glossary.md#cpu) activity, [GPU](../glossary.md#gpu) kernel execution, CUDA API calls, memory transfers, and thread activity. For a transformer training run, you can see precisely which kernels are running, when they start and stop, and how much of the GPU is utilized.
 
 ```
 NSIGHT SYSTEMS TIMELINE VIEW (schematic)
@@ -81,9 +81,9 @@ Output: a table of every operation with CPU time, CUDA time, memory allocated, a
 
 ### Quantization Tools
 
-Quantization reduces model size and increases inference throughput by representing weights and/or activations in lower-precision formats. The CUDA ecosystem has mature tooling for every quantization strategy.
+[Quantization](../glossary.md#quantization) reduces model size and increases inference throughput by representing weights and/or activations in lower-precision formats. The CUDA ecosystem has mature tooling for every quantization strategy.
 
-**AutoGPTQ** implements GPTQ (Generative Pre-Trained Transformer Quantization), a post-training quantization method that minimizes quantization error layer-by-layer using a small calibration dataset. Produces INT4 or INT8 models that load directly into Transformers.
+**AutoGPTQ** implements [GPTQ](../glossary.md#gptq) (Generative Pre-Trained [Transformer](../glossary.md#transformer) Quantization), a post-training quantization method that minimizes quantization error layer-by-layer using a small calibration dataset. Produces [INT4](../glossary.md#int4) or [INT8](../glossary.md#int8) models that load directly into Transformers.
 
 ```python
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
@@ -108,11 +108,11 @@ model.quantize(calibration_examples)
 model.save_quantized("./llama-3.2-3b-gptq")
 ```
 
-**AutoAWQ** implements AWQ (Activation-aware Weight Quantization), which identifies and protects the most salient weights from quantization error. AWQ models are generally higher quality than GPTQ at the same bit width.
+**AutoAWQ** implements AWQ (Activation-aware [Weight](../glossary.md#weight) Quantization), which identifies and protects the most salient weights from quantization error. AWQ models are generally higher quality than GPTQ at the same bit width.
 
 **BitsAndBytes** provides on-the-fly quantization during model loading: `load_in_8bit=True` or `load_in_4bit=True` in `from_pretrained`. Used pervasively for inference and as the base for QLoRA fine-tuning.
 
-**llama.cpp quantize** converts models to GGUF format with k-bit quantization schemes (Q2_K through Q8_0). The GGUF format bundles all quantization metadata into a single portable file.
+**llama.cpp quantize** converts models to [GGUF](../glossary.md#gguf) format with k-bit quantization schemes (Q2_K through Q8_0). The GGUF format bundles all quantization metadata into a single portable file.
 
 ```
 CUDA QUANTIZATION FORMAT LANDSCAPE
@@ -221,7 +221,7 @@ def benchmark(M, N, K, provider):
 
 MLX's profiling story is built around two tools: Xcode Instruments and manual timing. Neither gives the kernel-level visibility that Nsight provides.
 
-**Xcode Instruments -- Metal System Trace** is the most powerful profiling tool available for MLX. It shows Metal GPU work items, command buffer scheduling, CPU activity, and memory allocations on a timeline. To use it for MLX workloads:
+**Xcode Instruments -- [Metal](../glossary.md#metal) System Trace** is the most powerful profiling tool available for MLX. It shows Metal GPU work items, command buffer scheduling, CPU activity, and memory allocations on a timeline. To use it for MLX workloads:
 
 ```
 PROFILING MLX WITH INSTRUMENTS
@@ -326,7 +326,7 @@ What is missing:
 
 ### Conversion: Weight Conversion Scripts
 
-MLX does not have a unified conversion tool equivalent to ONNX. Model conversion is handled per-architecture by scripts in mlx-lm and mlx-examples.
+MLX does not have a unified conversion tool equivalent to ONNX. [Model](../glossary.md#model) conversion is handled per-architecture by scripts in mlx-lm and mlx-examples.
 
 ```
 MLX CONVERSION WORKFLOW
@@ -421,14 +421,14 @@ No standardized benchmark suite comparable to MLPerf exists for MLX. Published b
 | Capability | CUDA | MLX | Gap |
 |-----------|------|-----|-----|
 | **System-level profiling** | 🟢 Nsight Systems: CPU/GPU timeline, CUDA API calls, memory transfers, microsecond resolution | 🟡 Xcode Instruments Metal System Trace: timeline view, less granular | Medium -- Instruments works but shows less detail; Metal GPU work is visible but kernel names are not always readable |
-| **Kernel-level profiling** | 🟢 Nsight Compute: memory bandwidth, compute utilization, warp efficiency, per-SM counters | 🔴 No equivalent; Metal GPU counters exist but are not surfaced through MLX | Large -- impossible to know if a custom Metal kernel is memory-bound or compute-bound without external tools |
+| **[Kernel](../glossary.md#kernel)-level profiling** | 🟢 Nsight Compute: memory bandwidth, compute utilization, warp efficiency, per-SM counters | 🔴 No equivalent; Metal GPU counters exist but are not surfaced through MLX | Large -- impossible to know if a custom Metal kernel is memory-bound or compute-bound without external tools |
 | **Framework-level profiling** | 🟢 PyTorch Profiler: per-op CPU+CUDA timing, memory allocation, call stacks, TensorBoard export | 🟡 Manual timing only; no op-level profiler built into MLX | Large -- every profiling task in MLX requires writing benchmark code; no automatic tracing |
 | **Memory profiling** | 🟢 PyTorch memory profiler: per-op allocation, fragmentation stats, peak tracking | 🟡 `mx.metal.get_peak_memory()`: peak only; no per-op breakdown | Medium -- peak memory is trackable; allocation hot spots are not |
 | **Post-training quantization (calibration-based)** | 🟢 GPTQ (AutoGPTQ), AWQ (AutoAWQ): calibration-aware, minimizes reconstruction error | 🟡 Round-to-nearest only; no calibration step | Medium -- MLX quantization quality is lower for aggressive bit widths (2-3 bits); 4-bit quality is acceptable |
 | **Quantization format breadth** | 🟢 GPTQ, AWQ, NF4, GGUF, INT8, FP8 -- all supported by different tools | 🟡 MLX 4-bit and 8-bit group quantization only | Medium -- limited to group quantization; cannot load GPTQ or AWQ models |
 | **Model conversion (universal)** | 🟢 ONNX: universal intermediate format; PyTorch -> ONNX -> any backend | 🔴 No universal format; per-architecture conversion scripts only | Large for cross-framework portability; manageable for MLX-only workflows |
 | **Model format compatibility** | 🟢 safetensors, GGUF, ONNX, TensorRT, pickle -- all loadable via different libraries | 🟡 safetensors loadable; GGUF not directly loadable; no ONNX runtime | Medium -- most popular models come in safetensors; less common formats require extra steps |
-| **Gradient debugging** | 🟢 `autograd.set_detect_anomaly`: finds the exact operation that produced NaN; hooks for every layer | 🟡 Manual NaN checking after forward pass; no autograd anomaly detection | Medium -- NaNs are detectable with discipline; finding the source is harder |
+| **[Gradient](../glossary.md#gradient) debugging** | 🟢 `autograd.set_detect_anomaly`: finds the exact operation that produced NaN; hooks for every layer | 🟡 Manual NaN checking after forward pass; no autograd anomaly detection | Medium -- NaNs are detectable with discipline; finding the source is harder |
 | **GPU memory error detection** | 🟢 CUDA Compute Sanitizer: out-of-bounds, race conditions, memory leaks in kernels | 🔴 No equivalent for Metal kernels used by MLX | Large when writing custom Metal kernels; irrelevant for pure Python MLX code |
 | **Kernel debugging** | 🟢 cuda-gdb: step through CUDA kernels, inspect thread variables | 🔴 Metal Shader Debugger works for hand-written shaders; MLX-generated kernels not easily debuggable | Large for custom kernel authors; irrelevant for framework users |
 | **Standardized benchmarking** | 🟢 MLPerf: standardized workloads, strict methodology, published results across vendors | 🟡 Custom scripts only; no standardized benchmark suite | Medium -- real-world performance is measurable; comparative published results are sparse |
@@ -500,7 +500,7 @@ The CUDA workflow gives you hardware-level evidence for why something is slow. T
 - Hugging Face safetensors: [github.com/huggingface/safetensors](https://github.com/huggingface/safetensors). Safe weight storage format.
 - AutoGPTQ: [github.com/PanQiWei/AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ). GPTQ quantization for Transformers models.
 - AutoAWQ: [github.com/casper-hansen/AutoAWQ](https://github.com/casper-hansen/AutoAWQ). AWQ quantization implementation.
-- GPTQ paper (Frantar et al., 2022): Layer-wise quantization minimizing reconstruction error.
+- GPTQ paper (Frantar et al., 2022): [Layer](../glossary.md#layer)-wise quantization minimizing reconstruction error.
 - AWQ paper (Lin et al., 2023): Activation-aware weight quantization.
 - MLX documentation -- memory and profiling: [ml-explore.github.io/mlx/](https://ml-explore.github.io/mlx/). `mx.metal.get_peak_memory`, `mx.metal.reset_peak_memory`.
 - Apple Xcode Instruments documentation: [developer.apple.com/documentation/xcode/instruments](https://developer.apple.com/documentation/xcode/instruments). Metal System Trace profiling.

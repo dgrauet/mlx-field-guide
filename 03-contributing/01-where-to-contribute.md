@@ -16,7 +16,7 @@ Apple maintains three primary repositories under the [ml-explore](https://github
 
 **[mlx](https://github.com/ml-explore/mlx)** -- the core framework.
 
-The C++ and Metal implementation of MLX. This is where `mlx.core` lives -- array operations, the lazy evaluation engine, automatic differentiation, JIT compilation, and the Metal kernel library. Contributing here requires C++ and, for GPU kernels, Metal Shading Language (MSL). Apple's ML research team reviews and merges PRs. The bar is high: correctness, performance, and API consistency with the existing design.
+The C++ and [Metal](../glossary.md#metal) implementation of MLX. This is where `mlx.core` lives -- array operations, the lazy evaluation engine, automatic differentiation, JIT compilation, and the Metal kernel library. Contributing here requires C++ and, for [GPU](../glossary.md#gpu) kernels, Metal Shading Language (MSL). Apple's ML research team reviews and merges PRs. The bar is high: correctness, performance, and API consistency with the existing design.
 
 What gets contributed here:
 - New array operations (primitives that don't yet exist)
@@ -27,7 +27,7 @@ What gets contributed here:
 
 **[mlx-examples](https://github.com/ml-explore/mlx-examples)** -- reference model implementations.
 
-Python implementations of model architectures in MLX: LLaMA, Mistral, Stable Diffusion, Whisper, Mamba, and many others. Also contains `mlx-lm`, the primary library for LLM inference and LoRA fine-tuning on Apple Silicon. This is the most contributor-accessible of the three repositories -- contributions are Python, the review bar is lower, and new model ports are actively welcomed.
+Python implementations of model architectures in MLX: LLaMA, Mistral, Stable [Diffusion](../glossary.md#diffusion), Whisper, Mamba, and many others. Also contains `mlx-lm`, the primary library for LLM inference and LoRA fine-tuning on Apple Silicon. This is the most contributor-accessible of the three repositories -- contributions are Python, the review bar is lower, and new model ports are actively welcomed.
 
 What gets contributed here:
 - New model architecture ports (the most common contribution type)
@@ -64,7 +64,7 @@ FLUX image generation on Apple Silicon. A clean, standalone MLX port of Black Fo
 Vision-language models on MLX. LLaVA, Qwen-VL, Phi-3 Vision, and others. One of the few places multi-modal models are being ported systematically to Apple Silicon.
 
 **[mlx-forge](https://github.com/ml-explore/mlx-forge)** -- porting and kernel tooling.
-Tools for porting CUDA models to MLX. An opinionated directory of utilities, weight conversion helpers, and in-development Metal kernel work. If you are doing serious porting work on LTX-Video or Matrix-Game, this is where your utilities likely belong.
+Tools for porting [CUDA](../glossary.md#cuda) models to MLX. An opinionated directory of utilities, weight conversion helpers, and in-development Metal kernel work. If you are doing serious porting work on LTX-Video or [Matrix](../glossary.md#matrix)-Game, this is where your utilities likely belong.
 
 **Individual model ports:**
 - Matrix-Game-mlx (video generation port)
@@ -81,7 +81,7 @@ Tools for porting CUDA models to MLX. An opinionated directory of utilities, wei
 - Image generation (Stable Diffusion, FLUX variants)
 - Audio models (Whisper, TTS models)
 - Vision-language models
-- Embedding models
+- [Embedding](../glossary.md#embedding) models
 
 **The workflow for contributing a model conversion:**
 
@@ -89,7 +89,7 @@ Tools for porting CUDA models to MLX. An opinionated directory of utilities, wei
 2. Push the converted weights to a repository under your own HuggingFace account
 3. If the quality is validated and the model is in demand, request to move it to the `mlx-community` organization (or push directly if you have access)
 
-Model conversions are one of the highest-leverage contributions available. A converted model is immediately usable by anyone with Apple Silicon, without requiring them to run the conversion themselves. A well-documented conversion for a popular architecture can have thousands of downloads within days of posting.
+[Model](../glossary.md#model) conversions are one of the highest-leverage contributions available. A converted model is immediately usable by anyone with Apple Silicon, without requiring them to run the conversion themselves. A well-documented conversion for a popular architecture can have thousands of downloads within days of posting.
 
 **What makes a good mlx-community model:**
 - Tested on at least one M-series chip

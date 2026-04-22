@@ -1,10 +1,10 @@
 # Diffusion
 
-> **One-liner:** Diffusion models generate images (or video) by learning to gradually remove noise from random static, step by step, until a clean result emerges.
+> **One-liner:** [Diffusion](../glossary.md#diffusion) models generate images (or video) by learning to gradually remove noise from random static, step by step, until a clean result emerges.
 
 ## The Intuition
 
-You know from the Latent Space page that the diffusion process runs inside a compact latent -- not on raw pixels. This page explains what that process actually is: how a model learns to generate images and video from nothing but noise.
+You know from the [Latent Space](../glossary.md#latent-space) page that the diffusion process runs inside a compact latent -- not on raw pixels. This page explains what that process actually is: how a model learns to generate images and video from nothing but noise.
 
 ### The static-to-signal analogy
 
@@ -67,7 +67,7 @@ This incremental refinement is what gives diffusion models their distinctive qua
 
 ### The forward process: adding noise on a schedule
 
-Training begins with the forward process, which is pure math -- no learned parameters. You take a clean latent `x_0` and progressively corrupt it by adding Gaussian noise according to a noise schedule:
+[Training](../glossary.md#training) begins with the forward process, which is pure math -- no learned parameters. You take a clean latent `x_0` and progressively corrupt it by adding Gaussian noise according to a noise schedule:
 
 ```
 FORWARD PROCESS
@@ -105,7 +105,7 @@ This shortcut is key to efficient training: pick a random timestep `t`, corrupt 
 
 ### The model: what goes in and what comes out
 
-The denoising model -- a U-Net or a DiT (Diffusion Transformer) -- takes three inputs and produces one output:
+The denoising model -- a [U-Net](../glossary.md#u-net) or a DiT (Diffusion [Transformer](../glossary.md#transformer)) -- takes three inputs and produces one output:
 
 ```
 DENOISING MODEL
@@ -165,7 +165,7 @@ NOISE SCHEDULERS
 
 ### Flow Matching: the scheduler LTX-Video uses
 
-Flow Matching deserves special attention because it is what LTX-Video, Flux, and SD3 use -- and it is conceptually different from DDPM.
+[Flow Matching](../glossary.md#flow-matching) deserves special attention because it is what LTX-Video, Flux, and SD3 use -- and it is conceptually different from [DDPM](../glossary.md#ddpm).
 
 In DDPM, the forward process is a noisy diffusion that follows a curved path from data to noise. The model learns to reverse that curved path, step by step.
 
@@ -312,7 +312,7 @@ COMPUTE BUDGET PER GENERATION
   Any performance improvement in the model multiplies by that factor.
 ```
 
-This is why model optimization -- weight quantization, operator fusion, Flash Attention -- matters far more for the denoising step than for any other component. A 2x speedup in the denoising model means ~2x faster generation end to end. A 2x speedup in the VAE decoder saves almost nothing in practice.
+This is why model optimization -- weight quantization, operator fusion, [Flash Attention](../glossary.md#flash-attention) -- matters far more for the denoising step than for any other component. A 2x speedup in the denoising model means ~2x faster generation end to end. A 2x speedup in the VAE decoder saves almost nothing in practice.
 
 ### Matching the scheduler exactly or outputs are wrong
 
@@ -342,7 +342,7 @@ COMMON SCHEDULER PORTING MISTAKES
                                    produces incoherent images
 ```
 
-When porting an LTX-Video or similar flow matching model, confirm that your model output is indeed a velocity, and that your scheduler step formula is the rectified flow variant -- not the DDPM or DDIM formula, which are mathematically incompatible.
+When porting an LTX-Video or similar flow matching model, confirm that your model output is indeed a velocity, and that your scheduler step formula is the rectified flow variant -- not the DDPM or [DDIM](../glossary.md#ddim) formula, which are mathematically incompatible.
 
 ### The inference steps parameter is the main quality knob
 
@@ -470,33 +470,33 @@ latent = mx.random.normal(shape=(batch, t_compressed, h_compressed, w_compressed
 | Term | Definition |
 |------|------------|
 | **Diffusion** | A class of generative models that learn to reverse a noise-addition process; generate data by iteratively denoising random noise |
-| **Denoising** | The core operation: given a noisy input and its noise level, predict and remove the noise; the skill a diffusion model is trained to perform |
-| **Forward Process** | The training-time procedure of progressively adding Gaussian noise to clean data over T timesteps until it becomes pure noise; defined by a fixed mathematical formula, not learned |
-| **Reverse Process** | The generation-time procedure of iteratively applying the denoising model to remove noise step by step; what the trained model learns to do |
-| **Noise Schedule** | The sequence of noise levels (betas or alphas) used across timesteps; defines how quickly the signal is corrupted in the forward process and how it is recovered in the reverse |
-| **Timestep** | An integer t from 0 (clean) to T (pure noise) indexing the current noise level; passed as input to the denoising model so it knows how noisy its input is |
+| **[Denoising](../glossary.md#denoising)** | The core operation: given a noisy input and its noise level, predict and remove the noise; the skill a diffusion model is trained to perform |
+| **[Forward Process](../glossary.md#forward-process)** | The training-time procedure of progressively adding Gaussian noise to clean data over T timesteps until it becomes pure noise; defined by a fixed mathematical formula, not learned |
+| **[Reverse Process](../glossary.md#reverse-process)** | The generation-time procedure of iteratively applying the denoising model to remove noise step by step; what the trained model learns to do |
+| **[Noise Schedule](../glossary.md#noise-schedule)** | The sequence of noise levels (betas or alphas) used across timesteps; defines how quickly the signal is corrupted in the forward process and how it is recovered in the reverse |
+| **[Timestep](../glossary.md#timestep)** | An integer t from 0 (clean) to T (pure noise) indexing the current noise level; passed as input to the denoising model so it knows how noisy its input is |
 | **U-Net** | A convolutional neural network architecture with encoder, decoder, and skip connections; the original backbone for diffusion models (used in Stable Diffusion) |
 | **DiT (Diffusion Transformer)** | A transformer-based architecture for diffusion models; operates on flattened patches of the latent; used in Flux, SD3, LTX-Video |
 | **CFG (Classifier-Free Guidance)** | A technique that runs the model with and without conditioning at each step, then amplifies the difference; makes output more faithful to the prompt at the cost of 2x compute |
 | **DDPM** | Denoising Diffusion Probabilistic Models; the original formulation; stochastic, requires many steps (typically 1000) |
 | **DDIM** | Denoising Diffusion Implicit Models; deterministic; uses the same trained model as DDPM but with a step-skipping formula; enables quality generation in 50-100 steps |
-| **Euler Scheduler** | A simple ODE solver for diffusion; treats denoising as numerical integration of an ODE; fast and widely used |
-| **DPM-Solver** | A higher-order ODE solver for diffusion; fewer steps needed for comparable quality (10-20 steps); common in production pipelines |
+| **[Euler Scheduler](../glossary.md#euler-scheduler)** | A simple ODE solver for diffusion; treats denoising as numerical integration of an ODE; fast and widely used |
+| **[DPM-Solver](../glossary.md#dpm-solver)** | A higher-order ODE solver for diffusion; fewer steps needed for comparable quality (10-20 steps); common in production pipelines |
 | **Flow Matching** | A training and sampling approach that learns straight-line paths from noise to data; the model predicts velocity instead of noise; used in Flux, SD3, LTX-Video |
-| **Conditioning** | External information (text, image, depth map) provided to the denoising model to guide what it generates; fed in via cross-attention |
-| **Sampling Steps** | The number of denoising steps performed during generation; the primary trade-off lever between speed and output quality |
-| **Noise Prediction** | The DDPM/DDIM model output mode: predict the noise that was added to the input (also called "epsilon prediction") |
-| **Velocity Prediction** | The flow matching model output mode: predict the direction of travel from noise to data; also called "v-prediction" in some frameworks |
+| **[Conditioning](../glossary.md#conditioning)** | External information (text, image, depth map) provided to the denoising model to guide what it generates; fed in via cross-attention |
+| **[Sampling Steps](../glossary.md#sampling-steps)** | The number of denoising steps performed during generation; the primary trade-off lever between speed and output quality |
+| **[Noise Prediction](../glossary.md#noise-prediction)** | The DDPM/DDIM model output mode: predict the noise that was added to the input (also called "epsilon prediction") |
+| **[Velocity Prediction](../glossary.md#velocity-prediction)** | The flow matching model output mode: predict the direction of travel from noise to data; also called "v-prediction" in some frameworks |
 
 
 ## Sources
 
 - Ho, J., Jain, A., & Abbeel, P. (2020). "Denoising Diffusion Probabilistic Models." *NeurIPS 2020*. The foundational paper; introduces the forward/reverse process formulation and the denoising score matching objective. Available at [arxiv.org/abs/2006.11239](https://arxiv.org/abs/2006.11239)
-- Rombach, R., et al. (2022). "High-Resolution Image Synthesis with Latent Diffusion Models." Introduces running diffusion in latent space (the architecture that powers Stable Diffusion); also covers DDIM sampling and conditioning via cross-attention. Available at [arxiv.org/abs/2112.10752](https://arxiv.org/abs/2112.10752)
+- Rombach, R., et al. (2022). "High-Resolution Image Synthesis with [Latent Diffusion](../glossary.md#latent-diffusion) Models." Introduces running diffusion in latent space (the architecture that powers Stable Diffusion); also covers DDIM sampling and conditioning via cross-attention. Available at [arxiv.org/abs/2112.10752](https://arxiv.org/abs/2112.10752)
 - Peebles, W., & Xie, S. (2023). "Scalable Diffusion Models with Transformers." Introduces the DiT architecture; demonstrates that a pure transformer backbone outperforms U-Net on image generation benchmarks. Available at [arxiv.org/abs/2212.09748](https://arxiv.org/abs/2212.09748)
 - Lipman, Y., et al. (2023). "Flow Matching for Generative Modeling." Introduces the flow matching objective; explains straight-line (rectified) flows and velocity prediction. Available at [arxiv.org/abs/2210.02747](https://arxiv.org/abs/2210.02747)
 - Weng, L. "What are Diffusion Models?" A thorough blog post covering the DDPM math, score matching, and the connection between different formulations. Available at [lilianweng.github.io/posts/2021-07-11-diffusion-models](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
-- Hugging Face. "The Annotated Diffusion Model." A line-by-line walkthrough of implementing DDPM with annotated code. Available at [huggingface.co/blog/annotated-diffusion](https://huggingface.co/blog/annotated-diffusion)
+- Hugging Face. "The Annotated Diffusion [Model](../glossary.md#model)." A line-by-line walkthrough of implementing DDPM with annotated code. Available at [huggingface.co/blog/annotated-diffusion](https://huggingface.co/blog/annotated-diffusion)
 
 
 ## See Also

@@ -1,6 +1,6 @@
 # Audio: CUDA vs MLX
 
-> **Status:** 🟢 CUDA (Mature -- production-ready speech, TTS, and music generation) | 🟡 MLX (Emerging -- Whisper and growing TTS coverage; music generation gap remains)
+> **Status:** 🟢 [CUDA](../glossary.md#cuda) (Mature -- production-ready speech, TTS, and music generation) | 🟡 MLX (Emerging -- Whisper and growing TTS coverage; music generation gap remains)
 
 ## What This Domain Covers
 
@@ -67,7 +67,7 @@ for segment in result["segments"]:
     print(f"[{segment['start']:.1f}s - {segment['end']:.1f}s] {segment['text']}")
 ```
 
-**faster-whisper** is a reimplementation of Whisper using CTranslate2, a C++ inference engine with INT8 quantization. It runs significantly faster than the original PyTorch Whisper on CPU and CUDA:
+**faster-whisper** is a reimplementation of Whisper using CTranslate2, a C++ inference engine with [INT8](../glossary.md#int8) quantization. It runs significantly faster than the original PyTorch Whisper on [CPU](../glossary.md#cpu) and CUDA:
 
 ```
 FASTER-WHISPER vs ORIGINAL WHISPER (approximate)
@@ -239,7 +239,7 @@ result = mlx_whisper.transcribe(
 print(result["text"])
 ```
 
-The MLX Whisper implementation matches the original in output quality. Performance on Apple Silicon is competitive with faster-whisper on CPU, though slower than a CUDA GPU:
+The MLX Whisper implementation matches the original in output quality. Performance on Apple Silicon is competitive with faster-whisper on CPU, though slower than a CUDA [GPU](../glossary.md#gpu):
 
 ```
 WHISPER PERFORMANCE COMPARISON (large-v3, approximate RTF)
@@ -262,7 +262,7 @@ WHISPER PERFORMANCE COMPARISON (large-v3, approximate RTF)
 
 ### Whisper.cpp with Metal
 
-Whisper.cpp (Georgi Gerganov, same author as llama.cpp) is a C++ port of Whisper with Metal backend support. It does not use MLX -- it uses Metal Shading Language directly for GPU compute. But it is worth noting for Apple Silicon users because it provides extremely fast Whisper inference:
+Whisper.cpp (Georgi Gerganov, same author as llama.cpp) is a C++ port of Whisper with [Metal](../glossary.md#metal) backend support. It does not use MLX -- it uses Metal Shading Language directly for GPU compute. But it is worth noting for Apple Silicon users because it provides extremely fast Whisper inference:
 
 ```
 WHISPER.CPP vs MLX-WHISPER (Apple Silicon)
@@ -299,7 +299,7 @@ audio = model.generate(
 # audio: mx.array [samples], float32, 24kHz
 ```
 
-**CSM (Cartesia Speech Model)** on MLX provides voice cloning capability:
+**CSM (Cartesia Speech [Model](../glossary.md#model))** on MLX provides voice cloning capability:
 
 ```
 CSM CAPABILITIES (MLX port)

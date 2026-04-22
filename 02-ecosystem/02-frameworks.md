@@ -4,7 +4,7 @@
 
 ## What This Domain Covers
 
-The programming frameworks that sit between your Python code and the GPU hardware. These are not competing for the same users in the same market -- PyTorch and JAX run on CUDA (and other backends), while MLX runs only on Apple Silicon. But if you are porting a CUDA-based PyTorch model to MLX, you need to understand the design decisions behind each one: why the APIs differ, where they are directly analogous, and where porting requires genuine rethinking.
+The programming frameworks that sit between your Python code and the [GPU](../glossary.md#gpu) hardware. These are not competing for the same users in the same market -- PyTorch and JAX run on [CUDA](../glossary.md#cuda) (and other backends), while MLX runs only on Apple Silicon. But if you are porting a CUDA-based PyTorch model to MLX, you need to understand the design decisions behind each one: why the APIs differ, where they are directly analogous, and where porting requires genuine rethinking.
 
 This page compares PyTorch, JAX, and MLX across API design, ecosystem, performance model, hardware support, and community. By the end, you will understand not just what each framework does, but why it makes the choices it does.
 
@@ -101,7 +101,7 @@ PYTORCH HARDWARE BACKENDS
   XPU (Intel GPU):   🟡 Growing. Experimental.
 ```
 
-PyTorch's MPS backend runs on Apple Silicon, but it is a second-class citizen. Operations that rely on hand-written CUDA kernels (Flash Attention, BitsAndBytes quantization, many custom diffusion model ops) simply do not have MPS implementations. Models that use them will fail or silently fall back to CPU. This is one of the main motivations for MLX as a separate framework: MLX is designed for Apple Silicon from the ground up, rather than treating it as an afterthought.
+PyTorch's MPS backend runs on Apple Silicon, but it is a second-class citizen. Operations that rely on hand-written CUDA kernels ([Flash Attention](../glossary.md#flash-attention), BitsAndBytes quantization, many custom diffusion model ops) simply do not have MPS implementations. Models that use them will fail or silently fall back to [CPU](../glossary.md#cpu). This is one of the main motivations for MLX as a separate framework: MLX is designed for Apple Silicon from the ground up, rather than treating it as an afterthought.
 
 ### Ecosystem
 
@@ -139,7 +139,7 @@ PYTORCH ECOSYSTEM (selected)
     Flash Attention 2              -- memory-efficient attention
 ```
 
-The LTX-Video and Matrix-Game codebases are PyTorch + CUDA. When you port to MLX, you are translating out of this ecosystem.
+The LTX-Video and [Matrix](../glossary.md#matrix)-Game codebases are PyTorch + CUDA. When you port to MLX, you are translating out of this ecosystem.
 
 ---
 
@@ -233,7 +233,7 @@ If you have JAX experience, MLX will feel familiar. If you have only PyTorch exp
 
 ## MLX
 
-MLX is Apple's ML framework for Apple Silicon. Released December 2023. Combines a NumPy-like API with JAX-style functional autograd, lazy evaluation, and tight integration with Metal (Apple's GPU API).
+MLX is Apple's ML framework for Apple Silicon. Released December 2023. Combines a NumPy-like API with JAX-style functional autograd, lazy evaluation, and tight integration with [Metal](../glossary.md#metal) (Apple's GPU API).
 
 ### Design Philosophy
 
@@ -382,7 +382,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 | Aspect | PyTorch | JAX | MLX |
 |--------|---------|-----|-----|
 | Execution model | Eager by default; `torch.compile` for optimization | Lazy via `jit` decoration | Lazy always; `mx.eval()` to execute |
-| Autograd style | Tensor-based (`.backward()`) | Functional (`grad(f)`) | Functional (`mx.grad(f)`) |
+| Autograd style | [Tensor](../glossary.md#tensor)-based (`.backward()`) | Functional (`grad(f)`) | Functional (`mx.grad(f)`) |
 | NumPy compatibility | Partial (different API) | High (`jnp.*` mirrors `np.*`) | High (`mx.*` mirrors `np.*`) |
 | Module definition | `nn.Module` + `forward()` | Pytrees (arbitrary Python) | `nn.Module` + `__call__()` |
 | Data loading | DataLoader, Dataset | Manual or third-party | Manual (no official DataLoader) |
@@ -392,7 +392,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 
 | Aspect | PyTorch | JAX | MLX |
 |--------|---------|-----|-----|
-| Model zoo | 🟢 Massive (Hugging Face) | 🟡 Growing (Flax, Haiku) | 🟡 1000+ on mlx-community |
+| [Model](../glossary.md#model) zoo | 🟢 Massive (Hugging Face) | 🟡 Growing (Flax, Haiku) | 🟡 1000+ on mlx-community |
 | LLM inference | 🟢 vLLM, TGI, TensorRT-LLM | 🟡 MaxText, Paxml | 🟡 mlx-lm |
 | Image generation | 🟢 Diffusers (canonical) | 🟡 Limited | 🟡 mlx-examples stable diffusion |
 | Video generation | 🟢 Diffusers (LTX-Video, etc.) | 🔴 None | 🔴 Early (Matrix-Game-mlx) |
@@ -407,7 +407,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 |--------|---------|-----|-----|
 | Eager overhead | High (per-op dispatch) | Low (all via XLA) | Low (lazy + fused) |
 | Compilation | `torch.compile` (optional, 2.0+) | `jax.jit` (standard) | Automatic + `mx.compile()` |
-| Kernel fusion | Via `torch.compile` or Triton | Via XLA (always) | Via lazy evaluation (always) |
+| [Kernel](../glossary.md#kernel) fusion | Via `torch.compile` or Triton | Via XLA (always) | Via lazy evaluation (always) |
 | Memory efficiency | Manual with custom kernels | Good (XLA optimizes) | Good (fusion + unified memory) |
 | Multi-GPU scaling | 🟢 Linear scaling with NCCL | 🟢 pmap for TPU/GPU | 🔴 Single-device only |
 
@@ -444,10 +444,10 @@ out = residual * mx.rsqrt(variance + eps) * weight
 | **Custom ops (equivalent to Triton)** | 🟢 Triton, CUDA C++, extensive docs | 🟡 Metal Shading Language (steeper curve) | Medium -- Metal is capable but documentation is sparse and community is small |
 | **Debugging tools** | 🟢 PyTorch profiler, `torch.autograd.set_detect_anomaly` | 🟡 Instruments, `mx.metal.get_peak_memory()` | Medium -- basic debugging is fine; kernel-level profiling less mature |
 | **Mobile / edge deployment** | 🟢 PyTorch Mobile, Core ML export | 🔴 No mobile deployment path | Large -- MLX targets Mac; no iOS/Android deployment |
-| **Inference throughput (serving)** | 🟢 vLLM, continuous batching, paged attention | 🟡 mlx-lm server; no paged attention | Large for production -- MLX is not competitive for high-throughput API serving |
+| **[Inference](../glossary.md#inference) throughput (serving)** | 🟢 vLLM, continuous batching, paged attention | 🟡 mlx-lm server; no paged attention | Large for production -- MLX is not competitive for high-throughput API serving |
 | **Flash Attention** | 🟢 Flash Attention 2 (hand-fused CUDA kernel) | 🟡 MLX attention is efficient but not a port of FA2 | Medium -- MLX's attention is good; not identical to FA2's tiling strategy |
-| **Training stability tooling** | 🟢 Gradient clipping, loss scaling, anomaly detection | 🟡 Basic gradient operations; less tooling | Medium -- fine-tuning works; large-scale pretraining has less infrastructure |
-| **PyTorch ecosystem interop** | 🟢 Native | 🟡 Weight conversion via numpy bridge | Minor for inference; models convert via `numpy()` and `mx.array(np_array)` |
+| **[Training](../glossary.md#training) stability tooling** | 🟢 [Gradient](../glossary.md#gradient) clipping, loss scaling, anomaly detection | 🟡 Basic gradient operations; less tooling | Medium -- fine-tuning works; large-scale pretraining has less infrastructure |
+| **PyTorch ecosystem interop** | 🟢 Native | 🟡 [Weight](../glossary.md#weight) conversion via numpy bridge | Minor for inference; models convert via `numpy()` and `mx.array(np_array)` |
 
 ---
 
@@ -461,7 +461,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 
 **Streaming inference with KV cache management.** vLLM's paged attention enables high-throughput LLM serving by managing the KV cache across many concurrent requests. MLX's inference is single-user. Building a paged attention or equivalent memory management system for mlx-lm would make MLX-powered Macs viable as local API servers under concurrent load.
 
-**Hugging Face Diffusers backend for MLX.** Diffusers is the canonical library for image and video diffusion models. Every LTX-Video, FLUX, and Stable Diffusion implementation starts there. An official MLX backend for Diffusers (the way MPS is a backend today) would mean that new diffusion models could run on Apple Silicon without requiring a separate port.
+**Hugging Face Diffusers backend for MLX.** Diffusers is the canonical library for image and video diffusion models. Every LTX-Video, FLUX, and Stable [Diffusion](../glossary.md#diffusion) implementation starts there. An official MLX backend for Diffusers (the way MPS is a backend today) would mean that new diffusion models could run on Apple Silicon without requiring a separate port.
 
 ---
 
@@ -478,7 +478,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 
 ## See Also
 
-- [CUDA vs MLX Overview](01-cuda-vs-mlx-overview.md) -- the hardware layer beneath all these frameworks; unified memory vs. VRAM is why MLX exists as a separate project rather than a PyTorch backend
+- [CUDA vs MLX Overview](01-cuda-vs-mlx-overview.md) -- the hardware layer beneath all these frameworks; unified memory vs. [VRAM](../glossary.md#vram) is why MLX exists as a separate project rather than a PyTorch backend
 - [GPU Computing](../01-foundations/04-gpu-computing.md) -- kernel execution model, lazy evaluation rationale, memory hierarchy; explains why framework design choices (lazy vs. eager) have hardware consequences
 - [Training vs. Inference](../01-foundations/03-training-vs-inference.md) -- PyTorch's distributed training ecosystem only matters for training; MLX's limitations are primarily in training, not inference
 - [LLMs](03-llms.md) -- where MLX's framework capabilities are most developed; mlx-lm is the most complete MLX library relative to its PyTorch counterparts

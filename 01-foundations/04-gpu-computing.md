@@ -30,7 +30,7 @@ CPU (The Professor)                  GPU (The Stadium)
 +---------------------------+        +---------------------------+
 ```
 
-**CPUs are professors.** Fewer cores (8-32 on a modern desktop CPU), but each core is extremely capable -- complex branch prediction, out-of-order execution, large caches, very high clock speed. Great for varied, sequential, logic-heavy work.
+**CPUs are professors.** Fewer cores (8-32 on a modern desktop [CPU](../glossary.md#cpu)), but each core is extremely capable -- complex branch prediction, out-of-order execution, large caches, very high clock speed. Great for varied, sequential, logic-heavy work.
 
 **GPUs are stadiums.** Thousands of cores (4,096 on an M3 Max, over 10,000 on an NVIDIA H100), but each core is simple. No complex branch prediction. All cores run the same instruction at the same time. Terrible for sequential logic. Exceptional for applying the same simple operation across massive amounts of data.
 
@@ -52,7 +52,7 @@ Each cij = sum over k of (aik * bkj)
            ^-- computed independently, assign to its own thread
 ```
 
-With 20 output cells, a CPU computes them one after another (20 steps). A GPU assigns one thread to each cell and computes all 20 simultaneously (1 step). Scale this to a 4096 x 4096 matrix multiplication (over 16 million cells) and the speedup is the difference between hours and seconds.
+With 20 output cells, a CPU computes them one after another (20 steps). A [GPU](../glossary.md#gpu) assigns one thread to each cell and computes all 20 simultaneously (1 step). Scale this to a 4096 x 4096 matrix multiplication (over 16 million cells) and the speedup is the difference between hours and seconds.
 
 Every layer in a neural network is this same pattern: element-wise operations (ReLU, sigmoid, softmax), reductions (layer norm, attention softmax), matrix multiplications. All massively parallel. All ideal for the stadium model.
 
@@ -71,7 +71,7 @@ Each framework operation maps to one or more kernels:
 - `nn.LayerNorm` -> layer normalization kernel (a few operations fused into one)
 - `nn.MultiHeadAttention` -> multiple kernels: QKV projection, softmax, output projection
 
-When you write custom CUDA code and port it to MLX, what you're actually doing is rewriting a kernel: replacing code written for CUDA's programming model (running on NVIDIA hardware via NVIDIA's compiler) with equivalent code for Metal's programming model (running on Apple GPU hardware via Apple's compiler).
+When you write custom [CUDA](../glossary.md#cuda) code and port it to MLX, what you're actually doing is rewriting a kernel: replacing code written for CUDA's programming model (running on NVIDIA hardware via NVIDIA's compiler) with equivalent code for [Metal](../glossary.md#metal)'s programming model (running on Apple GPU hardware via Apple's compiler).
 
 ### Threads, blocks, and warps: how work is organized
 
@@ -91,7 +91,7 @@ GPU
     └── ... Block M
 ```
 
-**Threads** are the individual workers. Each thread runs the same kernel code but on different data (different indices). Thread 0 might compute C[0,0]; thread 1 computes C[0,1]; and so on.
+**Threads** are the individual workers. Each thread runs the same kernel code but on different data (different indices). [Thread](../glossary.md#thread) 0 might compute C[0,0]; thread 1 computes C[0,1]; and so on.
 
 **Warps** (NVIDIA) are groups of 32 threads that execute in strict lockstep. All 32 threads in a warp execute the same instruction at the same clock cycle, but on different data. If threads in a warp take different branches (if/else), the warp executes both branches and masks off the results for threads that shouldn't take each branch -- this is called "warp divergence" and kills performance.
 
@@ -145,9 +145,9 @@ Modern GPUs can perform trillions of floating-point operations per second (teraF
 Many ML operations are **memory-bandwidth-bound**: the GPU finishes its arithmetic faster than new data arrives from memory, and the compute units sit idle waiting. Adding 2 billion numbers is trivially fast arithmetic -- but reading those numbers from memory is the bottleneck.
 
 This is why techniques like:
-- **Kernel fusion** -- combining multiple operations (add + ReLU, or attention's QKV projections) into a single kernel that reads data once and applies all operations before writing back
-- **Flash Attention** -- a rewritten attention kernel that tiles the computation to stay in fast SRAM rather than writing intermediate results to VRAM
-- **Quantization** -- smaller dtypes (float16, int8) mean less data to move from memory
+- **[Kernel](../glossary.md#kernel) fusion** -- combining multiple operations (add + ReLU, or attention's QKV projections) into a single kernel that reads data once and applies all operations before writing back
+- **[Flash Attention](../glossary.md#flash-attention)** -- a rewritten attention kernel that tiles the computation to stay in fast SRAM rather than writing intermediate results to [VRAM](../glossary.md#vram)
+- **[Quantization](../glossary.md#quantization)** -- smaller dtypes (float16, int8) mean less data to move from memory
 
 ... matter so much for real-world performance. They're not about doing fewer math operations -- they're about moving less data.
 
@@ -334,7 +334,7 @@ If this happens: quantize the model, reduce the context length or resolution, or
 
 ### The porting mental model
 
-When you port LTX-Video or Matrix-Game from CUDA to MLX, here is the full picture of what is happening at the hardware level:
+When you port LTX-Video or [Matrix](../glossary.md#matrix)-Game from CUDA to MLX, here is the full picture of what is happening at the hardware level:
 
 ```
 ORIGINAL (NVIDIA)                    PORTED (Apple Silicon)
@@ -370,12 +370,12 @@ The weight-loading step is where Apple Silicon often feels faster than expected:
 | **CUDA** | Compute Unified Device Architecture. NVIDIA's parallel computing platform and programming model for their GPUs. The dominant ML computing environment for research and production. |
 | **Metal** | Apple's GPU programming API and shading language. The equivalent of CUDA for Apple GPUs. MLX abstracts over Metal so you don't need to write Metal kernels for standard operations. |
 | **VRAM** | Video RAM. Dedicated high-speed memory on discrete NVIDIA GPUs, separate from system RAM. Typically 8-80 GB. The hard limit for model size on NVIDIA hardware. |
-| **Unified Memory** | Apple Silicon's memory architecture where CPU and GPU share a single physical memory pool. No data copying between CPU and GPU. The GPU can use all available system RAM. |
-| **Memory Bandwidth** | The rate at which data can be moved between memory and the GPU's compute units, measured in GB/s. Often the real performance bottleneck for ML operations, not raw compute speed. |
-| **Parallelism** | Doing many computations at the same time. GPU parallelism means thousands of identical simple operations on different data elements, all running simultaneously. |
-| **Shared Memory** | Fast on-chip memory (per block of threads) used to stage data that multiple threads need. Accessing shared memory is ~100x faster than global memory. Key to writing fast GPU kernels. |
-| **Lazy Evaluation** | MLX's execution model: operations are not run immediately when called. Instead, MLX builds a computation graph and defers execution until `mx.eval()` is called (or output is required). Enables kernel fusion. |
-| **Kernel Fusion** | Combining multiple GPU operations into a single kernel to reduce memory bandwidth. Instead of reading/writing intermediate results to global memory between operations, fused kernels keep intermediate values in fast registers. |
+| **[Unified Memory](../glossary.md#unified-memory)** | Apple Silicon's memory architecture where CPU and GPU share a single physical memory pool. No data copying between CPU and GPU. The GPU can use all available system RAM. |
+| **[Memory Bandwidth](../glossary.md#memory-bandwidth)** | The rate at which data can be moved between memory and the GPU's compute units, measured in GB/s. Often the real performance bottleneck for ML operations, not raw compute speed. |
+| **[Parallelism](../glossary.md#parallelism)** | Doing many computations at the same time. GPU parallelism means thousands of identical simple operations on different data elements, all running simultaneously. |
+| **[Shared Memory](../glossary.md#shared-memory)** | Fast on-chip memory (per block of threads) used to stage data that multiple threads need. Accessing shared memory is ~100x faster than global memory. Key to writing fast GPU kernels. |
+| **[Lazy Evaluation](../glossary.md#lazy-evaluation)** | MLX's execution model: operations are not run immediately when called. Instead, MLX builds a computation graph and defers execution until `mx.eval()` is called (or output is required). Enables kernel fusion. |
+| **[Kernel Fusion](../glossary.md#kernel-fusion)** | Combining multiple GPU operations into a single kernel to reduce memory bandwidth. Instead of reading/writing intermediate results to global memory between operations, fused kernels keep intermediate values in fast registers. |
 
 
 ## Sources

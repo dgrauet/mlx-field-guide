@@ -10,7 +10,7 @@ Each opportunity below includes:
 - Where to start (repositories, issues, or first steps)
 - Difficulty estimate
 
-Difficulty is relative to someone who knows Python and is familiar with the PyTorch/MLX API. "Hard" means C++ and Metal Shading Language are likely required, or that the problem is genuinely novel. "Accessible" means Python-only, guided by existing examples.
+Difficulty is relative to someone who knows Python and is familiar with the PyTorch/MLX API. "Hard" means C++ and [Metal](../glossary.md#metal) Shading Language are likely required, or that the problem is genuinely novel. "Accessible" means Python-only, guided by existing examples.
 
 ---
 
@@ -29,7 +29,7 @@ These opportunities have the most leverage for the time invested. They do not re
 **High-value targets (as of 2025):**
 - New LLM releases in the first week after launch (Qwen, Gemma, Llama variants)
 - Multi-modal models (any new VLM not yet in mlx-vlm)
-- Video generation model weights (LTX-Video 0.9.7, Matrix-Game checkpoints)
+- Video generation model weights (LTX-Video 0.9.7, [Matrix](../glossary.md#matrix)-Game checkpoints)
 - Audio models (new Kokoro voice variants, new TTS architectures)
 
 **Where to start:**
@@ -68,7 +68,7 @@ The most-requested documentation gaps (from GitHub Discussions):
 
 **What the gap is:** MLX is tested primarily on M1/M2/M3 Max and Pro configurations. Edge cases emerge on:
 - Low-memory Macs (8 GB, 16 GB) -- models that require careful memory management
-- M1 vs M4 -- hardware differences in GPU generation can expose kernel bugs
+- M1 vs M4 -- hardware differences in [GPU](../glossary.md#gpu) generation can expose kernel bugs
 - macOS version differences -- Metal API behavior changed between macOS 13, 14, and 15
 - Specific quantization + model combinations that work on one chip but not another
 
@@ -90,7 +90,7 @@ These require either deeper MLX knowledge, architecture-specific expertise, or s
 
 ### 4. Port Missing Model Architectures to mlx-examples
 
-**What the gap is:** mlx-examples has reference implementations for major LLM families, Stable Diffusion, and a handful of other models. Missing architecture families include:
+**What the gap is:** mlx-examples has reference implementations for major LLM families, Stable [Diffusion](../glossary.md#diffusion), and a handful of other models. Missing architecture families include:
 - Video generation models (LTX-Video as a complete, clean port; Matrix-Game)
 - Multi-modal generation (image+text -> image, video instruction following)
 - Retrieval-augmented generation architectures
@@ -111,7 +111,7 @@ These require either deeper MLX knowledge, architecture-specific expertise, or s
 
 ### 5. ControlNet and IP-Adapter for MLX Image Generation
 
-**What the gap is:** mflux and the mlx-examples Stable Diffusion implementation support base image generation. Neither supports ControlNet (conditioning on edge maps, depth maps, poses) or IP-Adapter (conditioning on reference images). These are standard features in the CUDA ecosystem (via Diffusers) and commonly requested by users of Apple Silicon image generation.
+**What the gap is:** mflux and the mlx-examples Stable Diffusion implementation support base image generation. Neither supports ControlNet (conditioning on edge maps, depth maps, poses) or IP-Adapter (conditioning on reference images). These are standard features in the [CUDA](../glossary.md#cuda) ecosystem (via Diffusers) and commonly requested by users of Apple Silicon image generation.
 
 **Why it matters:** ControlNet and IP-Adapter are used in almost every serious image generation workflow -- character consistency, pose-guided generation, style transfer. Without them, Apple Silicon image generation is significantly less capable than CUDA alternatives.
 
@@ -121,7 +121,7 @@ These require either deeper MLX knowledge, architecture-specific expertise, or s
 - Reference: HuggingFace Diffusers ControlNet implementation as the PyTorch source to port from
 - The architecture is well-documented; the work is translating the PyTorch implementation and the ControlNet weight format into MLX
 
-**Difficulty:** Moderate. The ControlNet architecture is straightforward (a parallel encoder that injects activations into the main UNet). Weight conversion and integration into the existing inference pipeline is the bulk of the work.
+**Difficulty:** Moderate. The ControlNet architecture is straightforward (a parallel encoder that injects activations into the main UNet). [Weight](../glossary.md#weight) conversion and integration into the existing inference pipeline is the bulk of the work.
 
 ---
 
@@ -129,7 +129,7 @@ These require either deeper MLX knowledge, architecture-specific expertise, or s
 
 **What the gap is:** LTX-Video by Lightricks is one of the highest-quality open video generation models. Partial MLX ports exist, but a complete, clean implementation with:
 - Full VAE encode/decode
-- Full DiT (Diffusion Transformer) inference
+- Full DiT (Diffusion [Transformer](../glossary.md#transformer)) inference
 - Proper temporal attention
 - Validated output quality matching the PyTorch reference
 - Memory-efficient inference for 16 GB and 32 GB unified memory configs
@@ -172,7 +172,7 @@ These require C++, Metal Shading Language, or are genuinely open research proble
 ### 8. Custom Metal Kernels for Video Generation
 
 **What the gap is:** Video generation models use operations that do not have efficient MLX implementations:
-- **Temporal attention:** 3D attention over (batch, time, height*width, head_dim) tensors. The naive MLX implementation creates large intermediate tensors. Flash Attention-style tiling over the temporal dimension does not exist in MLX.
+- **Temporal attention:** 3D attention over (batch, time, height*width, head_dim) tensors. The naive MLX implementation creates large intermediate tensors. [Flash Attention](../glossary.md#flash-attention)-style tiling over the temporal dimension does not exist in MLX.
 - **3D convolutions:** `nn.Conv3d` is not in MLX. Video models (including LTX-Video's VAE) use 3D convolutions for temporal feature extraction.
 - **Causal video masking:** Attention masking that enforces temporal causality in video DiT models has no optimized implementation.
 
@@ -182,7 +182,7 @@ These require C++, Metal Shading Language, or are genuinely open research proble
 - [github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge) -- this is where custom Metal kernels for MLX are being developed
 - [github.com/ml-explore/mlx](https://github.com/ml-explore/mlx) -- the existing Metal kernel implementations are in `mlx/backend/metal/kernels/`; study these before writing new ones
 - Apple's Metal Shading Language specification: [developer.apple.com/metal/](https://developer.apple.com/metal/)
-- Start by writing the CPU fallback (pure MLX operations), validate correctness, then replace with a Metal kernel
+- Start by writing the [CPU](../glossary.md#cpu) fallback (pure MLX operations), validate correctness, then replace with a Metal kernel
 
 **Difficulty:** Hard. Requires C++ for the MLX primitive, Metal Shading Language for the GPU kernel, and careful validation against a reference implementation.
 
@@ -212,7 +212,7 @@ A proper MLX profiler would:
 
 ### 10. Calibration-Based Quantization
 
-**What the gap is:** MLX's quantization is round-to-nearest -- no calibration step, no reconstruction error minimization. CUDA's quantization tools (GPTQ, AWQ) are calibration-aware: they minimize the quantization error by adjusting scales based on a small calibration dataset. At 4-bit this makes a meaningful quality difference; at 3-bit or 2-bit the difference is large.
+**What the gap is:** MLX's quantization is round-to-nearest -- no calibration step, no reconstruction error minimization. CUDA's quantization tools ([GPTQ](../glossary.md#gptq), AWQ) are calibration-aware: they minimize the quantization error by adjusting scales based on a small calibration dataset. At 4-bit this makes a meaningful quality difference; at 3-bit or 2-bit the difference is large.
 
 **Why it matters:** 3-bit and 2-bit quantization would allow 70B+ parameter models to run on 64 GB unified memory Macs. Currently, 4-bit is the practical floor. Calibration-aware quantization would improve quality at every bit width.
 
@@ -232,7 +232,7 @@ A proper MLX profiler would:
 **What the gap is:** MLX is single-device only. No multi-GPU, no multi-machine. The largest unified memory configuration (Mac Studio M2/M4 Ultra, 192 GB) cannot run the largest open models (Llama 3 405B at bfloat16 = 810 GB). Running those models requires distributing across multiple machines.
 
 Distributed inference would require:
-- Tensor parallelism: split attention heads across devices
+- [Tensor](../glossary.md#tensor) parallelism: split attention heads across devices
 - Pipeline parallelism: split layers across devices
 - Communication primitives: send/receive tensors over a network or Thunderbolt
 
