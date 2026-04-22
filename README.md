@@ -48,3 +48,13 @@ Ready to help close the gap?
 ## Quick Reference
 
 Need to look up a term fast? See the [Glossary](glossary.md).
+
+## Contributing
+
+When editing content, install the pre-commit hook once per clone:
+
+```bash
+pre-commit install
+```
+
+It validates internal links, glossary anchors, and markdown link structure on every commit. To run the checks manually without committing: `python3 scripts/validate_docs.py`.

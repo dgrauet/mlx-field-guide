@@ -1,0 +1,15 @@
+# Run with: pre-commit install (once per clone) then commit as normal.
+# Manual full run: pre-commit run --all-files
+repos:
+  - repo: local
+    hooks:
+      - id: validate-docs
+        name: Validate field-guide markdown
+        entry: python3 scripts/validate_docs.py
+        language: system
+        pass_filenames: false
+        files: \.md$
+        description: >-
+          Block commits that introduce broken internal links, missing glossary
+          anchors, nested markdown links, or glossary links inside fenced code
+          blocks.
