@@ -20,6 +20,8 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 10 | [Quantization](10-quantization.md) | Making models smaller without losing quality |
 | 11 | [Positional Encoding](11-positional-encoding.md) | How models know token order; RoPE |
 | 12 | [Numerical Stability](12-numerical-stability.md) | Why models produce NaN, inf, and black images |
+| 13 | [Loss Functions](13-loss-functions.md) | What the loss was, and why it shapes the output |
+| 14 | [Normalization](14-normalization.md) | LayerNorm vs RMSNorm vs GroupNorm, and port traps |
 
 ## Prerequisites
 
