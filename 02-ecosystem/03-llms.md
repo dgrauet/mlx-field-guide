@@ -381,4 +381,5 @@ The key takeaway: **for 7B models, Apple Silicon is within 30-50% of an RTX 4090
 - [Quantization](../01-foundations/10-quantization.md) -- essential for understanding why 4-bit models work, what NF4 is, and where quantization error accumulates
 - [Training vs. Inference](../01-foundations/03-training-vs-inference.md) -- the compute and memory profiles are different; explains why fine-tuning gaps are larger than inference gaps
 - [Frameworks](02-frameworks.md) -- PyTorch/MLX API comparison; the translation layer between CUDA ecosystem libraries and mlx-lm
+- [Agents & Tool Use](12-agents-tool-use.md) -- tool/function calling and constrained generation built on top of mlx-lm; where the "structured output" gap noted above is covered in depth
 - [Image Generation](04-image-generation.md) -- the adjacent domain where MLX ecosystem coverage is thinner
