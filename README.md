@@ -40,6 +40,7 @@ Once you understand the foundations, explore the landscape:
 9. [Serving & Deployment](02-ecosystem/09-serving-deployment.md) -- from laptop to production API
 10. [Embeddings & RAG](02-ecosystem/10-embeddings-rag.md) -- semantic search and retrieval-augmented generation
 11. [Vision-Language Models](02-ecosystem/11-vision-language-models.md) -- models that see and read (mlx-vlm)
+12. [Agents & Tool Use](02-ecosystem/12-agents-tool-use.md) -- function calling, constrained generation, agent loops
 
 ### Pillar 3: Contributing
 

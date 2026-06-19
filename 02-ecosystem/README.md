@@ -19,6 +19,7 @@ Start with the overview, then explore domains that interest you:
 | 9 | [Serving & Deployment](09-serving-deployment.md) | Mature | Growing |
 | 10 | [Embeddings & RAG](10-embeddings-rag.md) | Mature | Emerging |
 | 11 | [Vision-Language Models](11-vision-language-models.md) | Mature | Growing |
+| 12 | [Agents & Tool Use](12-agents-tool-use.md) | Mature | Growing |
 
 ## Prerequisites
 
