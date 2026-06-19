@@ -18,6 +18,8 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 8 | [Diffusion](08-diffusion.md) | How generative models create images and video |
 | 9 | [Tokenization](09-tokenization.md) | How text gets converted into numbers |
 | 10 | [Quantization](10-quantization.md) | Making models smaller without losing quality |
+| 11 | [Positional Encoding](11-positional-encoding.md) | How models know token order; RoPE |
+| 12 | [Numerical Stability](12-numerical-stability.md) | Why models produce NaN, inf, and black images |
 
 ## Prerequisites
 

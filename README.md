@@ -22,6 +22,8 @@ Start here. These pages build on each other in order:
 8. [Diffusion](01-foundations/08-diffusion.md) -- how images and videos are generated
 9. [Tokenization](01-foundations/09-tokenization.md) -- how text enters a model
 10. [Quantization](01-foundations/10-quantization.md) -- making models smaller and faster
+11. [Positional Encoding](01-foundations/11-positional-encoding.md) -- how models know token order (RoPE)
+12. [Numerical Stability](01-foundations/12-numerical-stability.md) -- why models produce NaN, inf, and black images
 
 ### Pillar 2: Ecosystem
 
@@ -36,14 +38,18 @@ Once you understand the foundations, explore the landscape:
 7. [Training & Fine-tuning](02-ecosystem/07-training-finetuning.md) -- LoRA, datasets, full fine-tune
 8. [Tooling](02-ecosystem/08-tooling.md) -- profilers, converters, quantizers
 9. [Serving & Deployment](02-ecosystem/09-serving-deployment.md) -- from laptop to production API
+10. [Embeddings & RAG](02-ecosystem/10-embeddings-rag.md) -- semantic search and retrieval-augmented generation
+11. [Vision-Language Models](02-ecosystem/11-vision-language-models.md) -- models that see and read (mlx-vlm)
 
 ### Pillar 3: Contributing
 
 Ready to help close the gap?
 
 1. [Where to Contribute](03-contributing/01-where-to-contribute.md) -- repos, communities, decision-making
-2. [Porting Guide](03-contributing/02-porting-guide.md) -- CUDA to MLX patterns
-3. [Open Opportunities](03-contributing/03-open-opportunities.md) -- concrete gaps to fill
+2. [Development Environment](03-contributing/04-dev-environment.md) -- setting up the two-stack workspace
+3. [Porting Guide](03-contributing/02-porting-guide.md) -- CUDA to MLX patterns
+4. [Testing & Validation](03-contributing/05-testing-validation.md) -- proving a port is correct
+5. [Open Opportunities](03-contributing/03-open-opportunities.md) -- concrete gaps to fill
 
 ## Quick Reference
 

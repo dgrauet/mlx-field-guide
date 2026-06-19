@@ -262,12 +262,16 @@ Usage is similar to mlx-lm:
 ```python
 from mlx_vlm import load, generate
 from mlx_vlm.prompt_utils import apply_chat_template
+from mlx_vlm.utils import load_config
 
-model, processor = load("mlx-community/Qwen2-VL-7B-Instruct-4bit")
+model_path = "mlx-community/Qwen2-VL-7B-Instruct-4bit"
+model, processor = load(model_path)
+config = load_config(model_path)
 
-# Image + text prompt
-prompt = apply_chat_template(processor, model.config, "Describe this image.", num_images=1)
-output = generate(model, processor, "path/to/image.jpg", prompt, max_tokens=200)
+# Image + text prompt (note the order: prompt, then image)
+image = ["path/to/image.jpg"]
+prompt = apply_chat_template(processor, config, "Describe this image.", num_images=len(image))
+output = generate(model, processor, prompt, image, max_tokens=200)
 ```
 
 ### MLX Community on Hugging Face

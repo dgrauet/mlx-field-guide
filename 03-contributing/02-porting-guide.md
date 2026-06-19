@@ -154,7 +154,7 @@ Most standard PyTorch layers have direct MLX equivalents:
 | `torch.einsum(eq, a, b)` | `mx.einsum(eq, a, b)` | Direct equivalent |
 | `x.float()` | `x.astype(mx.float32)` | Explicit dtype |
 | `x.half()` | `x.astype(mx.float16)` | Explicit dtype |
-| `x.bfloat16()` | `x.astype(mx.bfloat16)` | MLX default dtype |
+| `x.bfloat16()` | `x.astype(mx.bfloat16)` | 16-bit, ~float32 range |
 
 ### Building the MLX Module
 
@@ -647,10 +647,16 @@ def trace_forward(pt_model, mlx_model, x_np: np.ndarray) -> None:
     with torch.no_grad():
         pt_model(x_pt)
 
-    # MLX: manually trace by running sub-components
-    # MLX does not have hooks -- add explicit logging to __call__
-    mlx_model.set_trace_mode(True)  # add this flag to your MLX model
-    mx.eval(mlx_model(x_mlx))
+    # MLX has no forward hooks. Instrument your model to record activations:
+    # pass a dict into __call__ and have each sub-module write into it, e.g.
+    #   def __call__(self, x, trace=None):
+    #       x = self.attn(x)
+    #       if trace is not None: trace["attn"] = x
+    #       ...
+    # This is a sketch -- you add the `trace` plumbing to your own model.
+    mlx_model(x_mlx, trace=mlx_intermediates)
+    for k, v in mlx_intermediates.items():
+        mx.eval(v)
 
     # Compare shared layer names
     for name in sorted(pt_intermediates.keys()):
@@ -711,20 +717,19 @@ mx.eval(x)
 ```python
 import mlx.core as mx
 
-# Compile the forward pass for repeated inference
+# Compile the forward pass for repeated inference. The function captures
+# the model; mx.compile traces the call and reuses the compiled plan.
 @mx.compile
-def compiled_forward(model_weights, x):
-    # Note: must use functional style with mx.compile
-    # (weights as explicit argument, not captured closure)
-    return model.apply(model_weights, x)
+def compiled_forward(x):
+    return model(x)
 
 # First call: compilation overhead (~0.1-1s)
-out = compiled_forward(model.parameters(), x)
+out = compiled_forward(x)
 mx.eval(out)
 
 # Subsequent calls: uses compiled plan (faster)
 for i in range(1000):
-    out = compiled_forward(model.parameters(), x)
+    out = compiled_forward(x)
     mx.eval(out)
 ```
 
@@ -741,12 +746,12 @@ MLX's lazy evaluation means intermediate tensors accumulate until execution is f
 import mlx.core as mx
 
 # Monitor memory during development
-mx.metal.reset_peak_memory()
+mx.reset_peak_memory()
 
 x = run_large_forward_pass(model, input)
 mx.eval(x)
 
-peak_mb = mx.metal.get_peak_memory() / 1e6
+peak_mb = mx.get_peak_memory() / 1e6
 print(f"Peak memory: {peak_mb:.0f} MB")
 
 # Strategy: reduce intermediate tensor size
@@ -756,25 +761,26 @@ print(f"Peak memory: {peak_mb:.0f} MB")
 
 ### dtype Considerations
 
-MLX defaults to `bfloat16` for model weights. Running in `float32` is slower (2x more memory) and usually unnecessary for inference:
+MLX *arrays* default to `float32`, but for inference you usually cast the model to `bfloat16`: it halves memory and is accurate enough for most generation. Note that `nn.Module` exposes `set_dtype` (which mutates the module in place and returns `None`) -- there is no `Module.astype`:
 
 ```python
 import mlx.core as mx
 import mlx.nn as nn
 
-model = MyModel(config)
+model = MyModel(config)               # parameters are float32 by default
 
-# Convert all parameters to bfloat16 (the MLX default)
-model = model.astype(mx.bfloat16)
-
-# Verify: check that a forward pass in bfloat16 matches float32 to tolerance
+# Reference forward in float32 first, BEFORE casting the model in place
 x_f32 = mx.random.normal((1, 64, 768))
+out_f32 = model(x_f32)
+mx.eval(out_f32)
+
+# Cast all parameters to bfloat16 (in place), then run the bf16 forward
+model.set_dtype(mx.bfloat16)
 x_bf16 = x_f32.astype(mx.bfloat16)
+out_bf16 = model(x_bf16)
+mx.eval(out_bf16)
 
-out_f32 = model.astype(mx.float32)(x_f32)
-out_bf16 = model.astype(mx.bfloat16)(x_bf16)
-mx.eval(out_f32, out_bf16)
-
+# Verify the bfloat16 forward matches float32 to tolerance
 max_diff = mx.abs(out_f32 - out_bf16.astype(mx.float32)).max().item()
 print(f"float32 vs bfloat16 max diff: {max_diff:.5f}")
 ```
@@ -985,6 +991,8 @@ The sections above cover the deep failures. For fast lookup of simpler issues:
 ## See Also
 
 - [Where to Contribute](01-where-to-contribute.md) -- repositories and communities; where to submit your port when it is working
+- [Development Environment](04-dev-environment.md) -- the two-stack workspace setup this guide assumes you already have running
+- [Testing & Validation](05-testing-validation.md) -- the next step after porting: proving the result is numerically correct and locking it in with regression tests
 - [Open Opportunities](03-open-opportunities.md) -- specific models and gaps ranked by impact; what to port if you don't already have a target
 - [Frameworks](../02-ecosystem/02-frameworks.md) -- PyTorch vs MLX API comparison; the source material for the layer mapping table above
 - [Tooling](../02-ecosystem/08-tooling.md) -- profiling and debugging tools for MLX; what to use when the port is slow or producing unexpected outputs
