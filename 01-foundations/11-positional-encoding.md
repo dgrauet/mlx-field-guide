@@ -121,8 +121,9 @@ mlx.fast.rope -- the knobs porters actually get wrong
   offset        starting position index -- this is the KV-cache / generation
                 position. Getting it wrong is the "off-by-one start" pitfall.
   base          the θ base frequency (commonly 10000); set per architecture.
-  scale         scales positions (m -> m/scale) -- this is Position
-                Interpolation for context extension.
+  scale         multiplies the position (effective pos = m * scale).
+                For Position Interpolation by a factor k (fit longer
+                context into the trained range), pass scale = 1/k.
   freqs         custom per-pair frequencies (how NTK/YaRN scaling is wired).
                 Mutually exclusive with `base` -- pass exactly one.
   dims          how many dims to rotate; may be < head_dim (partial RoPE),

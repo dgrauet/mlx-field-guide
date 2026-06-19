@@ -116,7 +116,7 @@ LlamaIndex and LangChain are pure Python and run on macOS, but their *default* e
 
 | Capability | CUDA | MLX | Gap |
 |-----------|------|-----|-----|
-| **Embedding model coverage** | 🟢 Every MTEB model via sentence-transformers | 🟡 Popular BGE/GTE/E5 ported; long tail missing | Medium -- mainstream models available; niche/new ones need a port |
+| **Embedding model coverage** | 🟢 Every MTEB model via sentence-transformers | 🟡 BERT-class architectures supported; availability is per-converted-checkpoint, long tail missing | Medium -- common models convertible; niche/new ones need a port |
 | **Embedding API ergonomics** | 🟢 `model.encode()` one-liner, auto pooling/batching | 🟡 mlx-embeddings covers the common path; fewer pooling options | Small -- the 90% case is one function call |
 | **High-throughput batch embedding** | 🟢 TEI: thousands/sec, batched server | 🟡 Single-process generation; no batched embedding server | Medium -- fine for indexing a personal corpus; slow for millions of docs |
 | **Vector stores** | 🟢 All, incl. CUDA FAISS GPU index | 🟢 FAISS-CPU, Chroma, LanceDB, Qdrant all run on macOS | None for typical corpora -- only the GPU-accelerated FAISS index is CUDA-only |

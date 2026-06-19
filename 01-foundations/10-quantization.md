@@ -66,7 +66,7 @@ NUMBER FORMAT COMPARISON
   bfloat16:  "Brain float 16." Same exponent range as float32, truncated
              mantissa. Handles very large and very small values without
              overflow. Preferred for training because gradients can be huge.
-             MLX defaults to bfloat16 for most operations.
+             MLX arrays default to float32; bf16 is a deliberate cast.
 ```
 
 The jump from float16 to int8 is a fundamental shift in representation. Float formats encode numbers on a logarithmic scale -- they can represent values as large as 65,000 or as small as 0.000001, with varying precision throughout. Integer formats divide a fixed range into uniform steps. A weight stored as int8 maps to one of exactly 256 possible values; int4 maps to one of 16.
@@ -440,7 +440,7 @@ This is not a hypothetical. The `mlx-community` organization maintains 4-bit qua
 | **Quantization** | The process of representing model weights (and sometimes activations) with fewer bits than their original training format, trading precision for reduced memory and faster inference. |
 | **FP32 (float32)** | 32-bit floating point. The standard precision for training. 4 bytes per value. Full range and precision, but expensive in memory. |
 | **FP16 (float16)** | 16-bit floating point. 2 bytes per value. Reduced range (max ~65,000); higher precision near zero than bfloat16. Common in [CUDA](../glossary.md#cuda) inference. |
-| **BF16 (bfloat16)** | "Brain float 16." 16-bit floating point with the same exponent range as float32 but reduced mantissa precision. 2 bytes per value. MLX's default dtype; preferred for training because it handles large gradients without overflow. |
+| **BF16 (bfloat16)** | "Brain float 16." 16-bit floating point with the same exponent range as float32 but reduced mantissa precision. 2 bytes per value. MLX arrays default to float32, but model code commonly casts to bf16 for inference; preferred over fp16 because it handles large values without overflow. |
 | **[INT8](../glossary.md#int8)** | 8-bit integer. 1 byte per value, 256 possible levels. Requires a scale factor to map the integer range to the float range. Common for inference quantization. |
 | **[INT4](../glossary.md#int4)** | 4-bit integer. 0.5 bytes per value, 16 possible levels. Standard for aggressive LLM quantization; 4-bit is the practical lower limit before quality degrades significantly. |
 | **PTQ (Post-Training Quantization)** | Quantizing a model after training is complete. No retraining required. The dominant approach for model distribution and inference optimization. |

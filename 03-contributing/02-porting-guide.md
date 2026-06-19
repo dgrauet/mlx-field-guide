@@ -991,6 +991,8 @@ The sections above cover the deep failures. For fast lookup of simpler issues:
 ## See Also
 
 - [Where to Contribute](01-where-to-contribute.md) -- repositories and communities; where to submit your port when it is working
+- [Development Environment](04-dev-environment.md) -- the two-stack workspace setup this guide assumes you already have running
+- [Testing & Validation](05-testing-validation.md) -- the next step after porting: proving the result is numerically correct and locking it in with regression tests
 - [Open Opportunities](03-open-opportunities.md) -- specific models and gaps ranked by impact; what to port if you don't already have a target
 - [Frameworks](../02-ecosystem/02-frameworks.md) -- PyTorch vs MLX API comparison; the source material for the layer mapping table above
 - [Tooling](../02-ecosystem/08-tooling.md) -- profiling and debugging tools for MLX; what to use when the port is slow or producing unexpected outputs
