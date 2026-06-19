@@ -24,6 +24,8 @@ Start here. These pages build on each other in order:
 10. [Quantization](01-foundations/10-quantization.md) -- making models smaller and faster
 11. [Positional Encoding](01-foundations/11-positional-encoding.md) -- how models know token order (RoPE)
 12. [Numerical Stability](01-foundations/12-numerical-stability.md) -- why models produce NaN, inf, and black images
+13. [Loss Functions](01-foundations/13-loss-functions.md) -- what the loss was, and why it shapes the output
+14. [Normalization](01-foundations/14-normalization.md) -- LayerNorm vs RMSNorm vs GroupNorm, and the port traps
 
 ### Pillar 2: Ecosystem
 
