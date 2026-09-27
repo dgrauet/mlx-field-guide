@@ -275,7 +275,7 @@ When MLX does not have an operation, you have three options in order of effort:
 
 **Option 1: Decompose into MLX primitives (try this first)**
 
-Most custom CUDA kernels are performance optimizations of composable operations. Decomposing them into MLX primitives lets MLX's lazy evaluation and kernel fusion recover most of the performance:
+Most custom CUDA kernels are performance optimizations of composable operations. Decomposing them into MLX primitives and wrapping the result in `mx.compile` (which fuses element-wise chains) recovers most of the performance:
 
 ```python
 # Custom CUDA kernel: fused rotary embedding
@@ -283,7 +283,7 @@ Most custom CUDA kernels are performance optimizations of composable operations.
 q, k = apply_rotary_emb_cuda(q, k, cos, sin, position_ids)
 
 # MLX: implement from primitives
-# MLX will fuse these automatically
+# (mx.fast.rope covers the standard cases; otherwise mx.compile fuses this)
 def apply_rotary_emb(x: mx.array, cos: mx.array, sin: mx.array) -> mx.array:
     """
     x: (batch, seq, n_heads, head_dim)

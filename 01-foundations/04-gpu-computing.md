@@ -239,15 +239,15 @@ When you call `mx.eval(e)` (or print `e`, or use `e` in a way that requires its 
 2. Launch ReLU kernel: read c from memory, write d to memory
 3. Launch scale kernel: read d from memory, write e to memory
 
-MLX can **fuse** these into a single kernel:
+Laziness alone still runs these as three separate kernels. Wrap the code in `mx.compile` and MLX can **fuse** them into a single kernel:
 1. Launch fused kernel: read a and b from memory, compute add+relu+scale, write e to memory
 
-Fusion reduces memory bandwidth by 3x. The intermediate tensors c and d never exist in global memory -- they live in registers inside the fused kernel.
+Fusion reduces memory bandwidth by 3x. The intermediate tensors c and d never exist in global memory -- they live in registers inside the fused kernel. (Lazy evaluation defers the work; `mx.compile` is what fuses it -- see [Lazy Evaluation](15-lazy-evaluation.md) for measurements.)
 
 `mx.eval` is how you force this deferred computation to run:
 
 ```python
-mx.eval(e)  # the GPU executes the fused kernel here
+mx.eval(e)  # the GPU executes the pending kernels here
 print(e)    # safe to read; result is materialized in memory
 ```
 

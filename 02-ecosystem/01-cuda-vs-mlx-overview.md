@@ -152,7 +152,7 @@ MLX SOFTWARE STACK
       |
   MLX Core (mlx):
     Array operations (NumPy-compatible API)
-    Lazy evaluation + automatic kernel fusion
+    Lazy evaluation + kernel fusion via mx.compile
     Autograd (value_and_grad, grad)
     Metal kernel integration
     JIT compilation
@@ -182,7 +182,7 @@ w = mx.random.normal((d_model, d_model))
 
 # Operations are lazy -- nothing runs until forced to evaluate
 y = x @ w
-y = mx.maximum(y, 0)   # ReLU -- fused with matmul automatically
+y = mx.maximum(y, 0)   # ReLU -- recorded, not yet run
 mx.eval(y)             # GPU executes here
 
 # Autograd works like JAX
@@ -192,7 +192,7 @@ loss, grads = mx.value_and_grad(loss_fn)(params, x)
 
 ### Key Design Choices in MLX
 
-**Lazy evaluation and kernel fusion.** Operations do not execute when called. MLX builds a graph of pending operations and executes them when `mx.eval()` is called. During that execution, MLX fuses compatible operations -- an add followed by a ReLU followed by a scale becomes one GPU kernel instead of three. This reduces memory bandwidth pressure automatically, without the user writing custom kernels.
+**Lazy evaluation and kernel fusion.** Operations do not execute when called. MLX builds a graph of pending operations and executes them when `mx.eval()` is called. Wrapping a function in `mx.compile` lets MLX fuse compatible operations -- an add followed by a ReLU followed by a scale becomes one GPU kernel instead of three. This reduces memory bandwidth pressure without the user writing custom kernels. Laziness and fusion are separate: without `mx.compile`, each operation still runs as its own kernel (see [Lazy Evaluation](../01-foundations/15-lazy-evaluation.md)).
 
 **Unified memory as a first-class citizen.** MLX was designed from the start for an environment with no VRAM/RAM split. There is no `.to(device)` API, because there is only one device. Arrays live in unified memory and are accessible by both CPU and GPU operations without any copy.
 

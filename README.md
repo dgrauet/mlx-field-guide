@@ -26,6 +26,7 @@ Start here. These pages build on each other in order:
 12. [Numerical Stability](01-foundations/12-numerical-stability.md) -- why models produce NaN, inf, and black images
 13. [Loss Functions](01-foundations/13-loss-functions.md) -- what the loss was, and why it shapes the output
 14. [Normalization](01-foundations/14-normalization.md) -- LayerNorm vs RMSNorm vs GroupNorm, and the port traps
+15. [Lazy Evaluation](01-foundations/15-lazy-evaluation.md) -- when MLX actually computes, and why mx.compile (not laziness) fuses kernels
 
 ### Pillar 2: Ecosystem
 
