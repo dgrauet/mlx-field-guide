@@ -41,7 +41,7 @@ This is why shape errors in MLX still surface on the line that causes them: shap
 
 ### What forces evaluation
 
-Evaluation happens **explicitly** when you call `mx.eval(...)`, or **implicitly** whenever Python needs actual values. In MLX 0.31, all of these trigger evaluation:
+Evaluation happens **explicitly** when you call `mx.eval(...)`, or **implicitly** whenever Python needs actual values. In MLX 0.32, all of these trigger evaluation:
 
 ```
 EXPLICIT
@@ -65,12 +65,12 @@ Laziness lets MLX skip work nobody asked for (an unused branch of the graph is n
 
 What laziness does **not** do on its own is **fuse** operations into a single kernel. Without `mx.compile`, each operation in the graph still runs as its own [kernel](../glossary.md#kernel), writing its intermediate result to memory. Fusion -- merging a chain of element-wise operations into one kernel whose intermediates stay in registers -- is what `mx.compile` adds.
 
-Measured on MLX 0.31.1 (Apple Silicon), a chain of 40 element-wise operations on a 4096×4096 array:
+Measured on MLX 0.32.2 (Apple Silicon), a chain of 40 element-wise operations on a 4096×4096 array:
 
 ```
                          time per call
-  lazy, not compiled        29.1 ms     (40 separate kernels)
-  mx.compile(f)              3.3 ms     (element-wise chain fused)
+  lazy, not compiled        29.8 ms     (40 separate kernels)
+  mx.compile(f)              3.2 ms     (element-wise chain fused)
 ```
 
 A ~9x difference, from one decorator. The pattern to remember: **lazy = deferred, compiled = fused.**
@@ -102,7 +102,7 @@ Three rules govern it:
 
 A lazy graph keeps every intermediate it still needs alive until it runs. If you let a long chain of work accumulate and evaluate it all at the end, MLX may schedule it so that many intermediates coexist. Evaluating at natural boundaries keeps the peak flat.
 
-Measured on MLX 0.31.1: accumulating `s = s + x * i` over 64 MB arrays:
+Measured on MLX 0.32.2: accumulating `s = s + x * i` over 64 MB arrays:
 
 ```
   steps   one mx.eval at the end   mx.eval every step
@@ -187,7 +187,7 @@ LAZY-EVALUATION PORT FAILURES
 - MLX documentation, "Compilation": [ml-explore.github.io/mlx/build/html/usage/compile.html](https://ml-explore.github.io/mlx/build/html/usage/compile.html)
 - MLX API reference, `mlx.core.eval` / `mlx.core.async_eval` / `mlx.core.compile`: [ml-explore.github.io/mlx/build/html/python/transforms.html](https://ml-explore.github.io/mlx/build/html/python/transforms.html)
 - `mlx-lm` generation loop (use of `mx.async_eval`): [github.com/ml-explore/mlx-lm](https://github.com/ml-explore/mlx-lm)
-- Timings and memory figures on this page: measured with MLX 0.31.1 on Apple Silicon; absolute numbers vary by chip, the ratios are what matter.
+- Timings and memory figures on this page: measured with MLX 0.32.2 on Apple Silicon (same results on 0.31.1); absolute numbers vary by chip, the ratios are what matter.
 
 ---
 

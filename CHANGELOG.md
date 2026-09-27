@@ -22,3 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LLMs, Serving, Frameworks, Open Opportunities: `mlx_lm.server` was described as single-request with experimental speculative decoding; it now has continuous batching, prompt caching and `--draft-model`.
 - Attention: LLaMA-7B KV cache at 4K tokens is 2.15 GB, not 1.07 GB. Quantization: 70B example (no M2 Ultra MacBook Pro; KV cache ~2.7 GB with GQA).
 - Several pages claimed MLX fuses kernels automatically through lazy evaluation; fusion requires `mx.compile` (measured 29.1 ms → 3.3 ms on a 40-op element-wise chain).
+
+### Changed
+
+- Pages 15-18 re-measured on MLX 0.32.2 (latest release) instead of 0.31.1. Conclusions unchanged; speculative decoding on the M2 Pro test setup now shows no gain at k=2 (was +3%).
