@@ -346,7 +346,7 @@ GENERATION WITH KV-CACHE (efficient)
 
 In PyTorch code, you'll see KV-cache passed as `past_key_values`. In MLX ports, you may see it as `cache` or `kv_cache`. The pattern is the same: a list of (K, V) pairs, one per transformer block, that grows by one slot each generation step.
 
-The memory cost: at 4096 tokens with LLaMA-7B, the KV-cache holds 32 blocks × 2 (K and V) × 32 heads × 128 head_dim × 4096 tokens × 2 bytes (float16) ≈ 1.07 GB. At long contexts or large batch sizes, KV-cache memory dominates inference memory usage.
+The memory cost: at 4096 tokens with LLaMA-7B, the KV-cache holds 32 blocks × 2 (K and V) × 32 heads × 128 head_dim × 4096 tokens × 2 bytes (float16) ≈ 2.15 GB. At long contexts or large batch sizes, KV-cache memory dominates inference memory usage.
 
 ### Grouped-Query Attention (GQA)
 
