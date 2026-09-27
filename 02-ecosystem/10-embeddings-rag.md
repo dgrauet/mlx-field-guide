@@ -106,6 +106,31 @@ LOCAL MLX RAG STACK (entirely on-device)
 
 This is genuinely a place where Apple Silicon's [unified memory](../glossary.md#unified-memory) is an advantage: the embedding model, the vector index, and a sizeable LLM can coexist in the same memory pool without the host/device copies a CUDA box pays for.
 
+### Centroids: how vector indexes avoid comparing against everything
+
+The naive similarity search compares the query vector against every stored vector. That is fine for a few hundred thousand chunks; beyond that, indexes cluster the vectors first, and the vocabulary that comes with it is **centroids**.
+
+A **centroid** is the average of a group of vectors -- the "center of mass" of a cluster. **k-means** is the algorithm that finds them: pick *k* starting centers, assign every vector to its nearest center, move each center to the mean of the vectors assigned to it, repeat until the centers stop moving.
+
+```
+IVF INDEX (FAISS IndexIVFFlat, and the same idea in most vector DBs)
+
+  Build (once):
+    k-means on all vectors  ->  nlist centroids  (e.g. 1024)
+    each vector stored in the list of its nearest centroid
+
+  Query:
+    1. compare the query to the 1024 centroids       (cheap)
+    2. keep the nprobe closest ones                  (e.g. 8)
+    3. compare the query only to vectors in those 8 lists
+       -> ~1% of the collection scanned instead of 100%
+
+  Trade-off: a relevant vector sitting in a list you didn't probe is
+  missed. Raise nprobe for recall, lower it for speed.
+```
+
+The same word shows up elsewhere in this guide with the same meaning: codebook quantization (see [Quantization](../01-foundations/10-quantization.md)) stores a small set of centroid values and replaces each weight by the index of its nearest one.
+
 ### Orchestration
 
 LlamaIndex and LangChain are pure Python and run on macOS, but their *default* embedding and LLM backends assume PyTorch/CUDA or a hosted API. To use MLX you wire in a custom embedding function (wrapping `mlx-embeddings`) and a custom LLM (wrapping `mlx-lm`). This glue is straightforward but not yet packaged as a first-class integration -- which is itself a contribution opportunity (below).
@@ -158,6 +183,7 @@ See [Open Opportunities](../03-contributing/03-open-opportunities.md) for how th
 - Text Embeddings Inference (TEI): [github.com/huggingface/text-embeddings-inference](https://github.com/huggingface/text-embeddings-inference)
 - mlx-embeddings: [github.com/Blaizzy/mlx-embeddings](https://github.com/Blaizzy/mlx-embeddings)
 - FAISS: [github.com/facebookresearch/faiss](https://github.com/facebookresearch/faiss)
+- FAISS wiki, "Faiss indexes" (IVF, `nlist`, `nprobe`): [github.com/facebookresearch/faiss/wiki/Faiss-indexes](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)
 - LanceDB: [github.com/lancedb/lancedb](https://github.com/lancedb/lancedb)
 - Chroma: [github.com/chroma-core/chroma](https://github.com/chroma-core/chroma)
 - LlamaIndex: [github.com/run-llama/llama_index](https://github.com/run-llama/llama_index)

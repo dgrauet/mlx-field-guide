@@ -143,6 +143,8 @@ GROUP QUANTIZATION (group_size = 4, simplified)
 
 MLX's `nn.QuantizedLinear` always uses group quantization. The default group size is 64, which balances accuracy against memory overhead well.
 
+Group quantization places its levels on an evenly spaced grid (`scale * q + bias`). A different family, **codebook** (or non-uniform) quantization, instead runs k-means on the weights and stores the resulting **centroids** as a small lookup table; each weight becomes the index of its nearest centroid (SqueezeLLM is an example). This fits the real distribution of weights better, but needs a table lookup at run time. MLX's built-in modes (`affine`, `mxfp4`, `mxfp8`, `nvfp4`) are all grid-based; codebook formats have to be dequantized or given a custom kernel.
+
 ### PTQ vs. QAT: two approaches to quantizing a model
 
 **Post-[Training](../glossary.md#training) Quantization (PTQ)** quantizes a model after training is complete. You take a trained float16 model, compute scales from its weights (sometimes passing a small calibration dataset through), and write out the quantized result. No retraining required. Fast and simple.
@@ -460,6 +462,7 @@ This is not a hypothetical. The `mlx-community` organization maintains 4-bit qua
 - Lin, J., Tang, J., Tang, H., Yang, S., Chen, W., Wang, W., & Han, S. (2023). "AWQ: Activation-aware [Weight](../glossary.md#weight) Quantization for LLM Compression and Acceleration." *MLSys 2024*. Introduces AWQ's salient weight identification technique. Available at [arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
 - MLX Documentation. "Quantization" and `mlx.nn.QuantizedLinear` reference. Covers MLX's group quantization implementation, `nn.QuantizedLinear`, and `mlx_lm.convert`. Available at [ml-explore.github.io/mlx/build/html/python/nn.html](https://ml-explore.github.io/mlx/build/html/python/nn.html)
 - Gerganov, G. et al. llama.cpp and the GGUF format. The reference implementation for GGUF quantization, including the K-quant family (Q4_K_M, Q5_K_S, etc.). Available at [github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp)
+- Kim, S., et al. (2023). "SqueezeLLM: Dense-and-Sparse Quantization." Non-uniform (codebook) quantization with weighted k-means centroids. Available at [arxiv.org/abs/2306.07629](https://arxiv.org/abs/2306.07629)
 
 
 ## See Also
