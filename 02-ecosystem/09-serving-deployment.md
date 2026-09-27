@@ -34,7 +34,7 @@ All three expose OpenAI-compatible HTTP APIs. All three require NVIDIA GPUs.
 
 ### Server-Class Inference
 
-**`mlx_lm.server`** is the reference server. It ships with `mlx-lm`, exposes an OpenAI-compatible HTTP endpoint (chat completions, streaming, completions), and handles token streaming correctly. It does *not* yet implement paged attention or continuous batching -- for single-user or low-concurrency scenarios this is fine; for high-QPS serving, it is a bottleneck.
+**`mlx_lm.server`** is the reference server. It ships with `mlx-lm`, exposes an OpenAI-compatible HTTP endpoint (chat completions, streaming, completions), and handles token streaming correctly. Current versions (0.31) do **continuous batching** (`--decode-concurrency`, `--prompt-concurrency`), keeps an LRU **prompt cache** of recent requests, and supports **speculative decoding** (`--draft-model`). It does *not* implement paged attention, and batching is disabled when a draft model or a quantized KV cache (`--kv-bits`) is used. On a single Mac, batching raises aggregate throughput much less than on a datacenter GPU (measured 1.6x at 8 requests on an M2 Pro, see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)).
 
 ```bash
 # Launch a server with any mlx-lm-compatible model
@@ -73,7 +73,7 @@ mlx_lm.server \
 | iOS/macOS app integration | -- (no NVIDIA hardware on mobile/Mac) | MLX-Swift | MLX wins by default |
 | Distributed across multiple local devices | -- (uncommon on CUDA outside datacenter) | exo | MLX wins by default |
 | Maximum single-stream throughput | TensorRT-LLM | `mx.compile` + `mlx_lm.generate` | CUDA ahead on raw compile optimization |
-| Speculative decoding | vLLM, TGI | Partial (mlx-lm has assist_model) | Gap: no production-grade speculative serving |
+| Speculative decoding | vLLM, TGI | `mlx_lm.generate` / `mlx_lm.server` `--draft-model` | Small: available, but gains depend on hardware (none measured on M2 Pro + 12B 4-bit) and it disables server batching |
 
 ---
 
@@ -81,7 +81,7 @@ mlx_lm.server \
 
 If you are porting a **single-user desktop app** from CUDA to MLX: almost no gap. LM Studio, `mlx_lm.server`, and MLX-Swift cover every reasonable scenario, often better than the CUDA equivalents (native on-device, unified memory advantages).
 
-If you are porting a **production multi-tenant API** from vLLM to MLX: significant work. You will be serving fewer concurrent users per dollar on an M-series box than on an H100 with vLLM, because the batching and KV cache management that makes vLLM fast is not yet in the MLX stack. This is the largest open production gap in the MLX ecosystem as of early 2026.
+If you are porting a **production multi-tenant API** from vLLM to MLX: significant work. You will be serving fewer concurrent users per dollar on an M-series box than on an H100 with vLLM, because paged KV cache management is not in the MLX stack and a single Mac's bandwidth is shared by every request. `mlx_lm.server` has continuous batching, but not vLLM's memory management or multi-GPU scale. This remains the largest open production gap in the MLX ecosystem.
 
 If you are building **an on-device mobile feature** where a CUDA solution never existed: MLX-Swift is the obvious choice and has no CUDA competitor.
 
@@ -92,8 +92,8 @@ If you are building **an on-device mobile feature** where a CUDA solution never 
 The serving gap is the single most contributor-available production gap in the MLX ecosystem. Concrete targets:
 
 1. **Paged-attention-style KV cache management in mlx-lm.** The algorithm is well-documented (vLLM paper); the blocker is implementation effort, not research.
-2. **Continuous batching in `mlx_lm.server`.** Combine with paged attention for real multi-tenant throughput.
-3. **Speculative decoding serving.** mlx-lm has the primitives (`assist_model`); production serving integration is open.
+2. **Batching with every cache type.** `mlx_lm.server` batches requests, but not with a quantized KV cache or a draft model; lifting those restrictions is open.
+3. **Speculative decoding that pays off on Apple Silicon.** It exists in mlx-lm (`--draft-model`), but measured gains are small on mid-range chips; benchmarking across chips and cheaper verification are open.
 4. **MLX-Swift high-level LLM APIs.** mlx-swift-examples has the building blocks; a reusable "drop-in chat API" would lower the barrier for app developers.
 
 See [Open Opportunities](../03-contributing/03-open-opportunities.md) for how these rank against other gaps.

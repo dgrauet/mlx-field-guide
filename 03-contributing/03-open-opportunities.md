@@ -150,13 +150,13 @@ These require either deeper MLX knowledge, architecture-specific expertise, or s
 
 ### 7. mlx-lm Server Improvements
 
-**What the gap is:** mlx-lm includes a server mode (`mlx_lm.server`) that exposes an OpenAI-compatible API for LLM inference. The current implementation is single-request (no concurrent batching), lacks streaming improvements for very long generations, and has limited KV cache management for long contexts.
+**What the gap is:** mlx-lm includes a server mode (`mlx_lm.server`) that exposes an OpenAI-compatible API for LLM inference. It now does continuous batching, prompt caching and speculative decoding, but batching is disabled with a quantized KV cache or a draft model, sliding-window caches cannot be quantized, and there is no paged KV cache management for many concurrent long contexts (see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)).
 
 **Why it matters:** mlx-lm server is how many users run local LLMs on Apple Silicon as an API backend. Improvements here affect every application built on top of it (Continue, Cursor, Open WebUI, etc. configured to use local models).
 
 **Where to start:**
-- [github.com/ml-explore/mlx-examples/tree/main/llms/mlx_lm](https://github.com/ml-explore/mlx-examples/tree/main/llms/mlx_lm) -- the mlx-lm source
-- [github.com/ml-explore/mlx-examples/issues](https://github.com/ml-explore/mlx-examples/issues) -- filter by `mlx-lm` and `server`
+- [github.com/ml-explore/mlx-lm](https://github.com/ml-explore/mlx-lm) -- the mlx-lm source (`mlx_lm/server.py`, `mlx_lm/models/cache.py`)
+- [github.com/ml-explore/mlx-lm/issues](https://github.com/ml-explore/mlx-lm/issues) -- filter by `server`
 - Reference: vLLM's API implementation for the feature set to target; llama.cpp server for Apple Silicon-specific lessons
 
 **Difficulty:** Moderate. The changes are Python, but require understanding async request handling, KV cache management, and inference loop mechanics.

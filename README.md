@@ -27,6 +27,7 @@ Start here. These pages build on each other in order:
 13. [Loss Functions](01-foundations/13-loss-functions.md) -- what the loss was, and why it shapes the output
 14. [Normalization](01-foundations/14-normalization.md) -- LayerNorm vs RMSNorm vs GroupNorm, and the port traps
 15. [Lazy Evaluation](01-foundations/15-lazy-evaluation.md) -- when MLX actually computes, and why mx.compile (not laziness) fuses kernels
+16. [KV Cache & Inference Optimization](01-foundations/16-kv-cache-inference.md) -- prefill vs decode, cache size, prompt caching, batching, speculative decoding
 
 ### Pillar 2: Ecosystem
 

@@ -155,7 +155,7 @@ MLX-LM CAPABILITIES (as of Q1 2025)
 
   Serving:
     mlx_lm.server: OpenAI-compatible HTTP API
-    Single-user optimized (no paged attention)
+    Continuous batching + prompt cache (no paged attention)
 ```
 
 **Loading and running a model:**
@@ -300,13 +300,13 @@ The practical difference:
 | **Tokens per second (7B model)** | 🟢 H100: ~2000 tok/s (vLLM batched); RTX 4090: ~100 tok/s single-user | 🟡 M3 Max: ~60-80 tok/s single-user; M2 Ultra: ~90 tok/s | Medium for single-user; large for batched serving. Per-token latency on Apple Silicon is comparable to RTX 4090; batched throughput is not. |
 | **[Model](../glossary.md#model) coverage** | 🟢 All architectures (Transformers supports everything) | 🟡 Major architectures supported; new and niche models lag by days to weeks | Small for mainstream models; noticeable for new research models |
 | **Context length** | 🟢 Ring attention, sequence parallelism for very long contexts; [Flash Attention](../glossary.md#flash-attention) 2 handles 100k+ tokens efficiently | 🟡 Long contexts work but are memory-bound; no ring attention equivalent | Medium -- 32k context is fine; 128k+ contexts can be slow or OOM on lower-memory configs |
-| **Paged attention / production serving** | 🟢 vLLM paged attention: serves thousands of concurrent users on one H100 | 🔴 Not implemented; mlx_lm.server is single-user | Large -- MLX cannot serve concurrent users at scale; this is a fundamental gap for production API deployments |
-| **Speculative decoding** | 🟢 vLLM, TGI both support speculative decoding with draft models; 2-3x latency reduction on long outputs | 🟡 Experimental in mlx-lm; not stable | Medium -- reduces latency for long-generation tasks; useful for chatbots and code generation |
+| **Paged attention / production serving** | 🟢 vLLM paged attention: serves thousands of concurrent users on one H100 | 🟡 No paged attention; mlx_lm.server batches concurrent requests but is bounded by one machine's bandwidth | Large -- MLX cannot serve concurrent users at scale; this is a fundamental gap for production API deployments |
+| **Speculative decoding** | 🟢 vLLM, TGI both support speculative decoding with draft models; 2-3x latency reduction on long outputs | 🟡 Available in mlx-lm (`--draft-model`); gains are hardware-dependent (none measured on M2 Pro with Gemma 3 12B 4-bit) | Medium -- reduces latency for long-generation tasks; useful for chatbots and code generation |
 | **[Tensor](../glossary.md#tensor) parallelism (multi-device)** | 🟢 vLLM, TGI, TensorRT-LLM all support multi-GPU sharding | 🔴 Not supported -- MLX is single-device | Large for models > 70B at FP16; less critical with quantization |
 | **[Quantization](../glossary.md#quantization) format compatibility** | 🟢 GPTQ, AWQ, GGUF, BitsAndBytes, TensorRT INT8/FP8 -- all interoperable with Transformers | 🟡 MLX 4-bit and 8-bit formats; GGUF via llama.cpp separately; not directly interchangeable | Medium -- MLX quantization works well; cannot load GPTQ/AWQ models directly |
 | **Fine-tuning: LoRA** | 🟢 PEFT: full LoRA, QLoRA, DoRA, IA3; Axolotl pipelines; Unsloth optimized kernels | 🟡 mlx-lm LoRA and QLoRA: works well for instruction tuning; fewer optimizations | Small for basic fine-tuning; medium for large-scale or optimized training |
 | **Fine-tuning: full parameter** | 🟢 DeepSpeed ZeRO, FSDP, gradient checkpointing; 7B full fine-tuning on 4x A100 | 🟡 Possible for small models; no gradient checkpointing; no distributed | Large -- full fine-tuning at scale is not practical in MLX |
-| **Continuous batching** | 🟢 vLLM, TGI, TensorRT-LLM all implement continuous batching | 🔴 Not implemented in mlx-lm server | Large for production; irrelevant for personal/single-user use |
+| **Continuous batching** | 🟢 vLLM, TGI, TensorRT-LLM all implement continuous batching | 🟢 Implemented in mlx-lm (`BatchGenerator`, `mlx_lm.server`); disabled with `--kv-bits` or a draft model | Large for production; irrelevant for personal/single-user use |
 | **Flash Attention** | 🟢 Flash Attention 2 kernel: optimal memory access pattern for attention, 8-16x memory reduction, ~2x speed | 🟡 MLX attention is memory-efficient via the fused `mx.fast.scaled_dot_product_attention` kernel, but not a direct port of FA2's tiling strategy | Medium -- MLX attention is good; extreme long-context edge cases are slower |
 | **Structured output / constrained generation** | 🟢 Outlines, guidance, LMQL -- schema-constrained generation via logit processing | 🟡 Primitive present (`logits_processors`); no first-class schema/grammar library | Large for the library layer -- the hook exists but a turnkey Outlines/XGrammar equivalent does not (see [Agents & Tool Use](12-agents-tool-use.md)) |
 | **Model evaluation frameworks** | 🟢 lm-evaluation-harness, HELM, EleutherAI benchmarks -- CUDA native | 🟡 lm-evaluation-harness has partial MLX support; not all benchmarks run | Small -- major benchmarks runnable; some harness integrations missing |
@@ -345,7 +345,7 @@ The key takeaway: **for 7B models, Apple Silicon is within 30-50% of an RTX 4090
 
 **Paged attention for mlx-lm.** The single most impactful contribution to the MLX LLM ecosystem. Implementing paged attention (or an equivalent block-based KV cache) in MLX would enable mlx-lm.server to handle concurrent requests without out-of-memory failures. This requires writing custom Metal kernels for block-attention and a Python-side scheduler, but the algorithmic design is well-documented in the vLLM paper.
 
-**Speculative decoding stabilization.** Speculative decoding exists in mlx-lm as experimental code. Stabilizing it, adding support for more draft model configurations, and benchmarking it against vanilla generation would give MLX users a meaningful latency improvement for long-output tasks.
+**Speculative decoding benchmarking.** Speculative decoding is in mlx-lm, but on an M2 Pro with Gemma 3 12B 4-bit it gave ~3% at best despite 62-74% draft acceptance (see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)). Benchmarks across chips and model sizes, and cheaper multi-token verification, would tell users when it is worth enabling.
 
 **Outlines-style constrained generation.** Schema-constrained generation (JSON output, regex-constrained output) is useful for tool use and structured data extraction. A lightweight logit-masking library compatible with mlx-lm's generate loop would fill this gap without requiring a port of the full Outlines library.
 

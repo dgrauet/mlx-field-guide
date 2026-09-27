@@ -444,7 +444,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 | **Custom ops (equivalent to Triton)** | 🟢 Triton, CUDA C++, extensive docs | 🟡 Metal Shading Language (steeper curve) | Medium -- Metal is capable but documentation is sparse and community is small |
 | **Debugging tools** | 🟢 PyTorch profiler, `torch.autograd.set_detect_anomaly` | 🟡 Instruments, `mx.metal.get_peak_memory()` | Medium -- basic debugging is fine; kernel-level profiling less mature |
 | **Mobile / edge deployment** | 🟢 PyTorch Mobile, Core ML export | 🔴 No mobile deployment path | Large -- MLX targets Mac; no iOS/Android deployment |
-| **[Inference](../glossary.md#inference) throughput (serving)** | 🟢 vLLM, continuous batching, paged attention | 🟡 mlx-lm server; no paged attention | Large for production -- MLX is not competitive for high-throughput API serving |
+| **[Inference](../glossary.md#inference) throughput (serving)** | 🟢 vLLM, continuous batching, paged attention | 🟡 mlx-lm server with continuous batching; no paged attention | Large for production -- MLX is not competitive for high-throughput API serving |
 | **Flash Attention** | 🟢 Flash Attention 2 (hand-fused CUDA kernel) | 🟡 MLX attention is efficient but not a port of FA2 | Medium -- MLX's attention is good; not identical to FA2's tiling strategy |
 | **[Training](../glossary.md#training) stability tooling** | 🟢 [Gradient](../glossary.md#gradient) clipping, loss scaling, anomaly detection | 🟡 Basic gradient operations; less tooling | Medium -- fine-tuning works; large-scale pretraining has less infrastructure |
 | **PyTorch ecosystem interop** | 🟢 Native | 🟡 [Weight](../glossary.md#weight) conversion via numpy bridge | Minor for inference; models convert via `numpy()` and `mx.array(np_array)` |
@@ -459,7 +459,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 
 **`torch.compile` style tracing for MLX.** MLX has `mx.compile()` which provides some JIT benefits, but its tracing is more limited than `torch.compile`'s TorchDynamo. Improving MLX's graph capture to handle more dynamic Python patterns would bring it closer to PyTorch's performance on complex models.
 
-**Streaming inference with KV cache management.** vLLM's paged attention enables high-throughput LLM serving by managing the KV cache across many concurrent requests. MLX's inference is single-user. Building a paged attention or equivalent memory management system for mlx-lm would make MLX-powered Macs viable as local API servers under concurrent load.
+**Streaming inference with KV cache management.** vLLM's paged attention enables high-throughput LLM serving by managing the KV cache across many concurrent requests. `mlx_lm.server` batches concurrent requests but allocates each request's KV cache separately. A paged attention or equivalent memory management system for mlx-lm would let a Mac serve more concurrent long-context requests from the same memory.
 
 **Hugging Face Diffusers backend for MLX.** Diffusers is the canonical library for image and video diffusion models. Every LTX-Video, FLUX, and Stable [Diffusion](../glossary.md#diffusion) implementation starts there. An official MLX backend for Diffusers (the way MPS is a backend today) would mean that new diffusion models could run on Apple Silicon without requiring a separate port.
 

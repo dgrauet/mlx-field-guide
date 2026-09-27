@@ -406,7 +406,7 @@ print(f"Unquantized layers: {len(unquantized)}")
 A concrete end-to-end example of why this matters:
 
 ```
-70B LLM ON 96 GB MACBOOK PRO M2 ULTRA
+70B LLM ON A 96 GB MACBOOK PRO (M2 MAX)
 
   Model: LLaMA-3-70B (70 billion parameters)
 
@@ -416,11 +416,12 @@ A concrete end-to-end example of why this matters:
 
   With 4-bit quantization:
     Weights: 70e9 * 0.5 bytes = 35 GB
-    KV cache (8K context): ~4 GB
+    KV cache (8K context): ~2.7 GB  (80 layers x 8 KV heads x 128 dims,
+                                     GQA -- see KV Cache & Inference)
     Activations: ~1 GB
-    Total: ~40 GB
+    Total: ~39 GB
 
-    96 GB Mac: 40 GB used, 56 GB free. Runs.
+    96 GB Mac: ~39 GB used, ~57 GB free. Runs.
 
   Performance:
     Tokens per second: ~4-8 tok/s (bandwidth-bound at 70B)
@@ -428,7 +429,7 @@ A concrete end-to-end example of why this matters:
     Use case: capable of real work, not just demos
 
   The same model on a 192 GB Mac:
-    Even at 4-bit: 40 GB weights, can run much longer contexts
+    Even at 4-bit: 35 GB weights, can run much longer contexts
     At 8-bit: 70 GB weights, still fits, higher quality
 ```
 
