@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 20, 3D Representations: meshes, point clouds, voxels, SDF vs occupancy, marching cubes, latent-set 3D generation (Hunyuan3D-2.1), hierarchical volume decoding, and 3D port failures, with measurements.
 - Foundations page 19, Convolutions & Patchification: conv arithmetic, causal 3D convs, transposed convs, pixel shuffle, patch embedding, and a PyTorch → MLX weight-layout table verified on MLX 0.32.2 (incl. a grouped transposed-convolution bug in 0.31.1).
 - Foundations page 18, Mixture of Experts: routing variants (Mixtral, Qwen MoE, DeepSeek-V3), shared experts, `gather_mm`/`SwitchGLU`, a measured MoE-vs-dense layer benchmark, and MoE port failures.
 - Foundations page 17, Sampling & Decoding: greedy, temperature, top-k/top-p/min-p, penalties, seeds; three mlx-lm vs transformers mismatches (ignored `generation_config.json`, temperature/filter order, repetition-penalty window), checked in both sources.

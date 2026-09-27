@@ -31,6 +31,7 @@ Start here. These pages build on each other in order:
 17. [Sampling & Decoding](01-foundations/17-sampling-decoding.md) -- temperature, top-k/top-p/min-p, and why mlx-lm and transformers sample differently
 18. [Mixture of Experts](01-foundations/18-mixture-of-experts.md) -- routers, active vs total parameters, and why MoE suits a Mac
 19. [Convolutions & Patchification](01-foundations/19-convolutions.md) -- 1D/2D/3D and transposed convolutions, patch embedding, and the MLX weight layouts
+20. [3D Representations](01-foundations/20-3d-representations.md) -- meshes, SDFs, marching cubes, and how latent 3D generators like Hunyuan3D produce a mesh
 
 ### Pillar 2: Ecosystem
 
