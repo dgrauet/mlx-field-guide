@@ -311,7 +311,7 @@ The practical difference:
 | **Structured output / constrained generation** | 🟢 Outlines, guidance, LMQL -- schema-constrained generation via logit processing | 🟡 Primitive present (`logits_processors`); no first-class schema/grammar library | Large for the library layer -- the hook exists but a turnkey Outlines/XGrammar equivalent does not (see [Agents & Tool Use](12-agents-tool-use.md)) |
 | **Model evaluation frameworks** | 🟢 lm-evaluation-harness, HELM, EleutherAI benchmarks -- CUDA native | 🟡 lm-evaluation-harness has partial MLX support; not all benchmarks run | Small -- major benchmarks runnable; some harness integrations missing |
 | **[Embedding](../glossary.md#embedding) models** | 🟢 sentence-transformers, all architectures; fast batch embedding with CUDA | 🟡 BERT-class models work; no sentence-transformers MLX integration | Small -- embeddings work; less convenient tooling |
-| **MoE (Mixture of Experts) models** | 🟢 Mixtral, DeepSeek-MoE via Transformers; expert routing optimized in vLLM | 🟡 Mixtral and DeepSeek MoE supported in mlx-lm; expert routing not specially optimized | Medium -- supported but expert routing on Apple Silicon is not as tuned |
+| **MoE (Mixture of Experts) models** | 🟢 Mixtral, DeepSeek-MoE via Transformers; expert routing optimized in vLLM | 🟢 20+ MoE architectures in mlx-lm (Mixtral, Qwen3-MoE, DeepSeek V3, gpt-oss, Llama 4, ...), with dedicated `gather_mm` / `gather_qmm` expert kernels | Small -- unified memory holds all experts; see [Mixture of Experts](../01-foundations/18-mixture-of-experts.md) |
 
 ---
 
