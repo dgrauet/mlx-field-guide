@@ -253,7 +253,7 @@ mx.eval(y)   # force execution of the pending computation
 print(y)     # safe to read the result
 ```
 
-This is different from PyTorch (which is eager by default) and more like JAX. If you're debugging and your print statement shows an unevaluated array, that's why.
+This is different from PyTorch (which is eager by default) and more like JAX. `print(y)` also forces evaluation implicitly, but a debugger's variable view does not -- if an array looks "empty" there, that's why. [Lazy Evaluation](15-lazy-evaluation.md) covers the full model.
 
 ### Real example: LTX video tensor shapes
 

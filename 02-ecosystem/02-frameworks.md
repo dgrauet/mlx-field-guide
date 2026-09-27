@@ -245,7 +245,7 @@ The three principles that shape every design decision:
 
 2. **Unified memory is the model.** No `.to('cuda')`, no `.to('cpu')`. There is one device. MLX never copies data between CPU and GPU because on Apple Silicon, they share the same memory.
 
-3. **Lazy evaluation enables automatic optimization.** Operations are queued, not executed. MLX fuses compatible operations automatically when evaluation is forced. The researcher writes simple sequential code; the framework generates efficient fused kernels.
+3. **Lazy evaluation, opt-in fusion.** Operations are queued, not executed, until evaluation is forced. Wrapping a function in `mx.compile` lets MLX fuse compatible operations into efficient kernels. The researcher writes simple sequential code; one decorator turns it into fused kernels.
 
 ### API Comparison: PyTorch vs MLX
 
@@ -355,7 +355,7 @@ Standard operations (linear layers, attention, activations, normalizations) port
 
 Three options, in order of effort:
 
-**Option 1: Decompose into MLX primitives.** Most custom CUDA kernels are fusions of standard operations for performance, not algorithmic novelty. `fused_add_norm`, `flash_attention_forward`, most custom activations -- these can be decomposed into standard MLX operations, and MLX's lazy evaluation + kernel fusion will recover most of the performance automatically.
+**Option 1: Decompose into MLX primitives.** Most custom CUDA kernels are fusions of standard operations for performance, not algorithmic novelty. `fused_add_norm`, `flash_attention_forward`, most custom activations -- these can be decomposed into standard MLX operations, and wrapping them in `mx.compile` (which fuses element-wise chains) recovers most of the performance.
 
 ```python
 # Custom CUDA kernel: fused add + RMSNorm
@@ -363,7 +363,7 @@ Three options, in order of effort:
 out = fused_add_norm_cuda(x, residual, weight, eps)
 
 # In MLX: decompose into primitives
-# MLX will fuse these operations automatically
+# (mx.fast.rms_norm covers the norm part; wrap the whole in mx.compile to fuse)
 residual = x + residual
 variance = mx.mean(residual ** 2, axis=-1, keepdims=True)
 out = residual * mx.rsqrt(variance + eps) * weight
@@ -405,9 +405,9 @@ out = residual * mx.rsqrt(variance + eps) * weight
 
 | Aspect | PyTorch | JAX | MLX |
 |--------|---------|-----|-----|
-| Eager overhead | High (per-op dispatch) | Low (all via XLA) | Low (lazy + fused) |
-| Compilation | `torch.compile` (optional, 2.0+) | `jax.jit` (standard) | Automatic + `mx.compile()` |
-| [Kernel](../glossary.md#kernel) fusion | Via `torch.compile` or Triton | Via XLA (always) | Via lazy evaluation (always) |
+| Eager overhead | High (per-op dispatch) | Low (all via XLA) | Low (lazy, batched submission) |
+| Compilation | `torch.compile` (optional, 2.0+) | `jax.jit` (standard) | `mx.compile()` (optional) |
+| [Kernel](../glossary.md#kernel) fusion | Via `torch.compile` or Triton | Via XLA (always) | Via `mx.compile` (opt-in) |
 | Memory efficiency | Manual with custom kernels | Good (XLA optimizes) | Good (fusion + unified memory) |
 | Multi-GPU scaling | 🟢 Linear scaling with NCCL | 🟢 pmap for TPU/GPU | 🔴 Single-device only |
 

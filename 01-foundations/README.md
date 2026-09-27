@@ -22,6 +22,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 12 | [Numerical Stability](12-numerical-stability.md) | Why models produce NaN, inf, and black images |
 | 13 | [Loss Functions](13-loss-functions.md) | What the loss was, and why it shapes the output |
 | 14 | [Normalization](14-normalization.md) | LayerNorm vs RMSNorm vs GroupNorm, and port traps |
+| 15 | [Lazy Evaluation](15-lazy-evaluation.md) | When MLX actually computes; mx.eval placement and mx.compile |
 
 ## Prerequisites
 
