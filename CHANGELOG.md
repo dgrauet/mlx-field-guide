@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 17, Sampling & Decoding: greedy, temperature, top-k/top-p/min-p, penalties, seeds; three mlx-lm vs transformers mismatches (ignored `generation_config.json`, temperature/filter order, repetition-penalty window), checked in both sources.
 - Foundations page 16, KV Cache & Inference Optimization: prefill vs decode, bandwidth ceiling, KV cache sizing (GQA, sliding window, `--kv-bits`), prompt caching, continuous batching, speculative decoding, with measurements on an M2 Pro (mlx-lm 0.31.3, Gemma 3 12B 4-bit).
 - Foundations page 15, Lazy Evaluation: evaluation triggers, `mx.eval` placement, `mx.compile` rules, memory and timing measurements (MLX 0.31.1).
 - Diffusion: section on sigma (σ), the noise level scheduler code iterates over, with both conventions (Euler/Karras and flow matching), `shift`, and porting mistakes.

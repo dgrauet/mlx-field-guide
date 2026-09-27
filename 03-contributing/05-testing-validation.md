@@ -89,7 +89,7 @@ Errors **compound through depth**: a 1e-3 per-layer discrepancy across 40 layers
 
 Numerical parity on a random input proves the math; it does not prove the *experience*. The final rung is generating real output and judging it:
 
-- **LLMs:** generate from fixed prompts at temperature 0; the MLX output should match the reference token-for-token (or near it) for at least the first many tokens. Divergence after some tokens can be sampling/rounding; divergence at token 1 is a bug.
+- **LLMs:** generate from fixed prompts at temperature 0; the MLX output should match the reference token-for-token (or near it) for at least the first many tokens. Divergence after some tokens can be a numerical near-tie in the argmax; divergence at token 1 is a bug. Set temperature 0 explicitly on the reference side too: `transformers` samples by default when the checkpoint's `generation_config.json` says so (see [Sampling & Decoding](../01-foundations/17-sampling-decoding.md)).
 - **Diffusion/image:** generate with a **fixed seed and fixed scheduler** and compare images. Look specifically for the known failure signatures -- black images, cyan/inverted color, gray mush, structured-but-wrong layout -- each of which points at a specific bug class (see [Porting Guide](02-porting-guide.md) failure modes).
 - **VLMs:** verify the **vision encoder** numerically (rung 1-3) *before* trusting generated descriptions; fluent wrong captions are the trap (see [Vision-Language Models](../02-ecosystem/11-vision-language-models.md)).
 
