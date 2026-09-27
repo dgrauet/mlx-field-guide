@@ -194,6 +194,62 @@ DDPM vs. FLOW MATCHING
 
 The model output is called a "velocity" -- the direction and magnitude to move in latent space to denoise. During sampling, you follow this vector field for the specified number of steps.
 
+### Sigma (σ): the noise level in scheduler code
+
+Open almost any modern scheduler (diffusers' `EulerDiscreteScheduler`, `FlowMatchEulerDiscreteScheduler`, k-diffusion, ComfyUI samplers) and the timestep is not the variable that drives the loop -- a list called `sigmas` is. **Sigma is the noise level itself**: the standard deviation (σ, the usual statistics symbol) of the Gaussian noise mixed into the latent at that step. A timestep is an index; a sigma is the physical quantity that index points to.
+
+There are two conventions, and they are not interchangeable:
+
+```
+SIGMA, CONVENTION 1: "noise added on top" (Euler, DPM++, Karras, k-diffusion)
+
+  x = x_0 + sigma * noise
+
+  sigma = sqrt((1 - alpha_bar_t) / alpha_bar_t)     <- same schedule as DDPM,
+                                                       re-expressed in sigmas
+  Stable Diffusion 1.5 range: sigma_max ~ 14.6 (pure noise) -> sigma_min ~ 0.03
+
+  Consequences for the sampling loop:
+    - start from noise * sqrt(sigma_max^2 + 1)      (diffusers: init_noise_sigma)
+    - divide the model input by sqrt(sigma^2 + 1)   (diffusers: scale_model_input)
+
+
+SIGMA, CONVENTION 2: "interpolation" (Flow Matching: SD3, Flux, LTX-Video)
+
+  x = (1 - sigma) * x_0 + sigma * noise
+
+  sigma goes from 1 (pure noise) to 0 (clean data)
+  timestep passed to the model = sigma * 1000      (in diffusers' implementation)
+  Euler step:  x_next = x + (sigma_next - sigma) * velocity
+
+  "shift" warps the sigmas toward the noisy end (more steps spent on
+  composition), often chosen from the image resolution:
+    sigma' = shift * sigma / (1 + (shift - 1) * sigma)
+```
+
+The sigma schedule is the list of sigmas the sampler visits, ending with `0`. Two schedulers with the same model and the same step count can visit very different sigmas (Karras schedules cluster steps near low noise, `shift` pushes them toward high noise) -- which is why they produce different images.
+
+This is where the "wrong scheduler sigma schedule" bug in the [Porting Guide](../03-contributing/02-porting-guide.md) comes from. The frequent variants:
+
+```
+SIGMA PORTING MISTAKES
+
+  Mistake                                   Effect
+  ----------------------------------------- ---------------------------------
+  Passing sigma where the model expects     Model thinks the input is almost
+    a timestep (0.7 instead of 700)           clean: blurry, noisy output
+  Forgetting scale_model_input (conv. 1)    Model input up to ~15x too large
+                                              in early steps: broken output
+  Forgetting init_noise_sigma (conv. 1)     Starting noise ~15x too weak for
+                                              the sigma the model is told:
+                                              wrong from the first step
+  Missing or wrong shift (conv. 2)          Plausible image, wrong composition
+                                              or detail vs the reference
+  Schedule not ending at sigma = 0          Final image keeps residual noise
+```
+
+The safest porting practice: print the reference pipeline's `scheduler.sigmas` and `scheduler.timesteps` once, and assert your MLX schedule matches them to ~1e-6 before comparing any images.
+
 ### Classifier-Free Guidance (CFG): amplifying the text signal
 
 A text-conditioned model can generate images that loosely match a prompt. But "loosely match" is often not what you want -- you want the image to *strongly* match the prompt, even if that means some loss of diversity.
@@ -475,6 +531,7 @@ latent = mx.random.normal(shape=(batch, t_compressed, h_compressed, w_compressed
 | **[Reverse Process](../glossary.md#reverse-process)** | The generation-time procedure of iteratively applying the denoising model to remove noise step by step; what the trained model learns to do |
 | **[Noise Schedule](../glossary.md#noise-schedule)** | The sequence of noise levels (betas or alphas) used across timesteps; defines how quickly the signal is corrupted in the forward process and how it is recovered in the reverse |
 | **[Timestep](../glossary.md#timestep)** | An integer t from 0 (clean) to T (pure noise) indexing the current noise level; passed as input to the denoising model so it knows how noisy its input is |
+| **[Sigma (σ)](../glossary.md#sigma)** | The noise level at a sampling step, as the standard deviation of the mixed-in Gaussian noise; the variable scheduler code actually iterates over (`scheduler.sigmas`) |
 | **U-Net** | A convolutional neural network architecture with encoder, decoder, and skip connections; the original backbone for diffusion models (used in Stable Diffusion) |
 | **DiT (Diffusion Transformer)** | A transformer-based architecture for diffusion models; operates on flattened patches of the latent; used in Flux, SD3, LTX-Video |
 | **CFG (Classifier-Free Guidance)** | A technique that runs the model with and without conditioning at each step, then amplifies the difference; makes output more faithful to the prompt at the cost of 2x compute |
@@ -495,6 +552,9 @@ latent = mx.random.normal(shape=(batch, t_compressed, h_compressed, w_compressed
 - Rombach, R., et al. (2022). "High-Resolution Image Synthesis with [Latent Diffusion](../glossary.md#latent-diffusion) Models." Introduces running diffusion in latent space (the architecture that powers Stable Diffusion); also covers DDIM sampling and conditioning via cross-attention. Available at [arxiv.org/abs/2112.10752](https://arxiv.org/abs/2112.10752)
 - Peebles, W., & Xie, S. (2023). "Scalable Diffusion Models with Transformers." Introduces the DiT architecture; demonstrates that a pure transformer backbone outperforms U-Net on image generation benchmarks. Available at [arxiv.org/abs/2212.09748](https://arxiv.org/abs/2212.09748)
 - Lipman, Y., et al. (2023). "Flow Matching for Generative Modeling." Introduces the flow matching objective; explains straight-line (rectified) flows and velocity prediction. Available at [arxiv.org/abs/2210.02747](https://arxiv.org/abs/2210.02747)
+- Karras, T., et al. (2022). "Elucidating the Design Space of Diffusion-Based Generative Models" (EDM). Recasts samplers in terms of the noise level sigma; origin of the Karras sigma schedule. Available at [arxiv.org/abs/2206.00364](https://arxiv.org/abs/2206.00364)
+- Esser, P., et al. (2024). "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis" (SD3). Flow matching sigmas and the resolution-dependent timestep shift. Available at [arxiv.org/abs/2403.03206](https://arxiv.org/abs/2403.03206)
+- Hugging Face diffusers scheduler source (`scheduling_euler_discrete.py`, `scheduling_flow_match_euler_discrete.py`): the reference for `sigmas`, `init_noise_sigma`, `scale_model_input`, and `shift`. Available at [github.com/huggingface/diffusers/tree/main/src/diffusers/schedulers](https://github.com/huggingface/diffusers/tree/main/src/diffusers/schedulers)
 - Weng, L. "What are Diffusion Models?" A thorough blog post covering the DDPM math, score matching, and the connection between different formulations. Available at [lilianweng.github.io/posts/2021-07-11-diffusion-models](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
 - Hugging Face. "The Annotated Diffusion [Model](../glossary.md#model)." A line-by-line walkthrough of implementing DDPM with annotated code. Available at [huggingface.co/blog/annotated-diffusion](https://huggingface.co/blog/annotated-diffusion)
 

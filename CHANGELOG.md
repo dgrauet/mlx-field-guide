@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Foundations page 15, Lazy Evaluation: evaluation triggers, `mx.eval` placement, `mx.compile` rules, memory and timing measurements (MLX 0.31.1).
+- Diffusion: section on sigma (σ), the noise level scheduler code iterates over, with both conventions (Euler/Karras and flow matching), `shift`, and porting mistakes.
+- Embeddings & RAG: centroids and k-means, and how IVF indexes use them; Quantization: note on codebook (centroid-based) quantization.
+- Glossary: Softmax, Sigma (σ), Centroid, k-means.
 
 ### Fixed
 
