@@ -28,6 +28,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 18 | [Mixture of Experts](18-mixture-of-experts.md) | Routers, active vs total parameters, MoE port traps |
 | 19 | [Convolutions & Patchification](19-convolutions.md) | Conv layouts, causal 3D and transposed convs, patch embedding |
 | 20 | [3D Representations](20-3d-representations.md) | Meshes, SDFs, marching cubes, latent 3D generation |
+| 21 | [VAEs in Depth](21-vae.md) | Latent normalization per model family, fp16, tiling, VAE port traps |
 
 ## Prerequisites
 
