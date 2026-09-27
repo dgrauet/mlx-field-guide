@@ -19,7 +19,7 @@ PREFILL (reading the prompt)              DECODE (writing the answer)
   measured: 123 tok/s                       measured: 16 tok/s
 ```
 
-(Measured with `mlx-lm` 0.31.3 on an M2 Pro, Gemma 3 12B 4-bit, 1,802-token prompt.) The same model processes prompt tokens ~8x faster than it produces new ones, because prefill does lots of arithmetic per byte of weights it reads, and decode does almost none.
+(Measured with `mlx-lm` 0.31.3 and MLX 0.32.2 on an M2 Pro, Gemma 3 12B 4-bit, 1,802-token prompt.) The same model processes prompt tokens ~8x faster than it produces new ones, because prefill does lots of arithmetic per byte of weights it reads, and decode does almost none.
 
 ---
 
@@ -105,9 +105,9 @@ Measured on the same M2 Pro / Gemma 3 12B 4-bit, 128 tokens per request:
 
 ```
   concurrent requests   aggregate decode speed   per request
-          1                  16.2 tok/s             16.2
-          4                  22.4 tok/s              5.6
-          8                  25.8 tok/s              3.2
+          1                  16.5 tok/s             16.5
+          4                  22.5 tok/s              5.6
+          8                  25.9 tok/s              3.2
 ```
 
 Throughput rises, but only 1.6x at 8 requests -- far from 8x. At this model size and bandwidth, a batch of tokens is **not** free: the quantized matmuls start costing real compute as the batch grows. Batching helps a server with many users; it does nothing for a single user's latency. Batching is disabled in the server when a draft model or `--kv-bits` is used.
@@ -126,12 +126,12 @@ Measured on the same setup, Gemma 3 1B 4-bit drafting for Gemma 3 12B 4-bit, 256
 
 ```
   draft    k    decode speed   tokens accepted from draft
-  none     -     16.5 tok/s          -
-  1B       2     17.0 tok/s       158/256  (62%)
-  1B       4     15.6 tok/s       190/256  (74%)
+  none     -     16.4 tok/s          -
+  1B       2     16.3 tok/s       158/256  (62%)
+  1B       4     15.5 tok/s       190/256  (74%)
 ```
 
-Acceptance is good, yet the speed-up is ~3% at k=2 and negative at k=4. The reason is the batching result above: speculative decoding assumes that verifying *k+1* tokens costs about the same as generating one. On this machine and model it doesn't, and the draft model's own passes add up. Speculative decoding pays off when the big model is strongly bandwidth-bound (bigger models, higher-bandwidth chips) and the draft is much smaller. **Measure it on your hardware before relying on it.**
+Acceptance is good, yet there is no speed-up at k=2 and a loss at k=4 (on MLX 0.31.1 the same run gave +3% at k=2). The reason is the batching result above: speculative decoding assumes that verifying *k+1* tokens costs about the same as generating one. On this machine and model it doesn't, and the draft model's own passes add up. Speculative decoding pays off when the big model is strongly bandwidth-bound (bigger models, higher-bandwidth chips) and the draft is much smaller. **Measure it on your hardware before relying on it.**
 
 ---
 
@@ -203,7 +203,7 @@ Three rules:
 
 ## Sources
 
-- Measurements on this page: `mlx-lm` 0.31.3 / MLX 0.31.1, Apple M2 Pro (32 GB), `mlx-community/gemma-3-12b-it-4bit` with `mlx-community/gemma-3-1b-it-4bit` as draft. Absolute numbers vary by chip; the ratios are the lesson.
+- Measurements on this page: `mlx-lm` 0.31.3 / MLX 0.32.2, Apple M2 Pro (32 GB), `mlx-community/gemma-3-12b-it-4bit` with `mlx-community/gemma-3-1b-it-4bit` as draft. Absolute numbers vary by chip; the ratios are the lesson.
 - `mlx-lm` source: `mlx_lm/models/cache.py` (cache classes, `make_prompt_cache`), `mlx_lm/generate.py` (`speculative_generate_step`, `BatchGenerator`), `mlx_lm/SERVER.md` (KV quantization and batching caveats): [github.com/ml-explore/mlx-lm](https://github.com/ml-explore/mlx-lm)
 - Pope, R., et al. (2022). "Efficiently Scaling Transformer Inference." Prefill vs decode, memory-bandwidth bounds, KV cache costs. [arxiv.org/abs/2211.05102](https://arxiv.org/abs/2211.05102)
 - Leviathan, Y., Kalman, M., & Matias, Y. (2023). "Fast Inference from Transformers via Speculative Decoding." [arxiv.org/abs/2211.17192](https://arxiv.org/abs/2211.17192)
