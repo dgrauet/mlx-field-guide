@@ -33,6 +33,7 @@ Start here. These pages build on each other in order:
 19. [Convolutions & Patchification](01-foundations/19-convolutions.md) -- 1D/2D/3D and transposed convolutions, patch embedding, and the MLX weight layouts
 20. [3D Representations](01-foundations/20-3d-representations.md) -- meshes, SDFs, marching cubes, and how latent 3D generators like Hunyuan3D produce a mesh
 21. [VAEs in Depth](01-foundations/21-vae.md) -- compression factors, latent normalization conventions, fp16, tiling
+22. [Audio Representations](01-foundations/22-audio-representations.md) -- waveforms, mel spectrograms, vocoders, neural codecs and RVQ
 
 ### Pillar 2: Ecosystem
 

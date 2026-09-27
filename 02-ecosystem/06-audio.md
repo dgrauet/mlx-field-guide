@@ -25,12 +25,12 @@ WHISPER ARCHITECTURE
 
   Audio input (raw waveform or mel spectrogram)
       |
-      +--> Log-mel spectrogram: [T_audio] -> [80 mel bands, T/2 frames]
-      |    (25ms windows, 10ms hop, 80 mel filters)
+      +--> Log-mel spectrogram: 30 s at 16 kHz -> [80 mel bands, 3000 frames]
+      |    (25ms windows, 10ms hop, 80 mel filters; 128 for large-v3)
       |
       +--> Audio Encoder (transformer encoder)
-      |    Input:  [80, T/2] mel spectrogram
-      |    Output: [T/2, d_model]  -- encoded audio representations
+      |    Input:  [80, 3000] mel spectrogram
+      |    Stride-2 conv stem -> Output: [1500, d_model]  -- 20 ms per position
       |
       +--> Text Decoder (transformer decoder, autoregressive)
            Attends to encoder output via cross-attention
@@ -76,9 +76,9 @@ FASTER-WHISPER vs ORIGINAL WHISPER (approximate)
   -----       --------      ----------------    ---------------------
   large-v3    RTX 4090      ~25 RTF*           ~60-80 RTF (INT8)
   large-v3    CPU (M1)      ~2 RTF             ~8-12 RTF
-  
+
   * RTF = Real-Time Factor (1.0 = real-time; higher is faster)
-  
+
   faster-whisper advantages:
     - INT8 quantization: 4x memory reduction, 2-4x speed
     - Batched transcription: process multiple audio segments in parallel
@@ -437,6 +437,7 @@ TTS PERFORMANCE (1 minute of synthesized audio, approximate)
 
 ## See Also
 
+- [Audio Representations](../01-foundations/22-audio-representations.md) -- waveforms, mel spectrograms, vocoders, codecs and RVQ, and the preprocessing traps
 - [Serving & Deployment](09-serving-deployment.md) -- real-time audio serving considerations; streaming and latency constraints
 - [Transformers](../01-foundations/05-transformers.md) -- Whisper, Bark, MusicGen, and most TTS models use transformer architectures; the encoder-decoder pattern (Whisper) and decoder-only pattern (Bark, MusicGen) are the two dominant structures
 - [Tokenization](../01-foundations/09-tokenization.md) -- audio models tokenize sound just as LLMs tokenize text; EnCodec's residual vector quantization (RVQ) is the audio equivalent of BPE tokenization
