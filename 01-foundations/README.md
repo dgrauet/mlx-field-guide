@@ -26,6 +26,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 16 | [KV Cache & Inference Optimization](16-kv-cache-inference.md) | Why decode is bandwidth-bound, and which speed-ups pay off on a Mac |
 | 17 | [Sampling & Decoding](17-sampling-decoding.md) | From logits to a token; default and order mismatches between libraries |
 | 18 | [Mixture of Experts](18-mixture-of-experts.md) | Routers, active vs total parameters, MoE port traps |
+| 19 | [Convolutions & Patchification](19-convolutions.md) | Conv layouts, causal 3D and transposed convs, patch embedding |
 
 ## Prerequisites
 

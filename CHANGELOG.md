@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 19, Convolutions & Patchification: conv arithmetic, causal 3D convs, transposed convs, pixel shuffle, patch embedding, and a PyTorch → MLX weight-layout table verified on MLX 0.32.2 (incl. a grouped transposed-convolution bug in 0.31.1).
 - Foundations page 18, Mixture of Experts: routing variants (Mixtral, Qwen MoE, DeepSeek-V3), shared experts, `gather_mm`/`SwitchGLU`, a measured MoE-vs-dense layer benchmark, and MoE port failures.
 - Foundations page 17, Sampling & Decoding: greedy, temperature, top-k/top-p/min-p, penalties, seeds; three mlx-lm vs transformers mismatches (ignored `generation_config.json`, temperature/filter order, repetition-penalty window), checked in both sources.
 - Foundations page 16, KV Cache & Inference Optimization: prefill vs decode, bandwidth ceiling, KV cache sizing (GQA, sliding window, `--kv-bits`), prompt caching, continuous batching, speculative decoding, with measurements on an M2 Pro (mlx-lm 0.31.3, Gemma 3 12B 4-bit).
@@ -19,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Porting Guide: MLX has had `nn.Conv3d` (and transposed convolutions) for a long time; the guide said it didn't.
 - LLMs, Serving, Frameworks, Open Opportunities: `mlx_lm.server` was described as single-request with experimental speculative decoding; it now has continuous batching, prompt caching and `--draft-model`.
 - Attention: LLaMA-7B KV cache at 4K tokens is 2.15 GB, not 1.07 GB. Quantization: 70B example (no M2 Ultra MacBook Pro; KV cache ~2.7 GB with GQA).
 - Several pages claimed MLX fuses kernels automatically through lazy evaluation; fusion requires `mx.compile` (measured 29.1 ms → 3.3 ms on a 40-op element-wise chain).

@@ -266,8 +266,10 @@ out_torch_layout = np.transpose(out_np, (0, 3, 1, 2))  # (N, C, H', W')
 ```
 
 For 3D convolutions (video models like LTX-Video and Matrix-Game), the layout difference extends to the temporal dimension:
-- PyTorch 3D: NCTHW (batch, channels, time, height, width)
-- MLX does not have `nn.Conv3d` -- you need to either implement it manually or decompose into 2D convolutions over slices
+- PyTorch 3D: NCTHW (batch, channels, time, height, width); weights `(out, in, kT, kH, kW)`
+- MLX 3D: NTHWC; `nn.Conv3d` weights `(out, kT, kH, kW, in)` -- permute with `(0, 2, 3, 4, 1)`
+
+Transposed convolutions use a different permutation, and MLX lacks a few PyTorch options (grouped 3D convolutions, padding modes on the layer itself). See [Convolutions & Patchification](../01-foundations/19-convolutions.md) for the full table and workarounds.
 
 ### Handling Missing Operations
 
