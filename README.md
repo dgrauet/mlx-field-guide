@@ -28,6 +28,7 @@ Start here. These pages build on each other in order:
 14. [Normalization](01-foundations/14-normalization.md) -- LayerNorm vs RMSNorm vs GroupNorm, and the port traps
 15. [Lazy Evaluation](01-foundations/15-lazy-evaluation.md) -- when MLX actually computes, and why mx.compile (not laziness) fuses kernels
 16. [KV Cache & Inference Optimization](01-foundations/16-kv-cache-inference.md) -- prefill vs decode, cache size, prompt caching, batching, speculative decoding
+17. [Sampling & Decoding](01-foundations/17-sampling-decoding.md) -- temperature, top-k/top-p/min-p, and why mlx-lm and transformers sample differently
 
 ### Pillar 2: Ecosystem
 

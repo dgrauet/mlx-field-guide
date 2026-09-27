@@ -24,6 +24,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 14 | [Normalization](14-normalization.md) | LayerNorm vs RMSNorm vs GroupNorm, and port traps |
 | 15 | [Lazy Evaluation](15-lazy-evaluation.md) | When MLX actually computes; mx.eval placement and mx.compile |
 | 16 | [KV Cache & Inference Optimization](16-kv-cache-inference.md) | Why decode is bandwidth-bound, and which speed-ups pay off on a Mac |
+| 17 | [Sampling & Decoding](17-sampling-decoding.md) | From logits to a token; default and order mismatches between libraries |
 
 ## Prerequisites
 
