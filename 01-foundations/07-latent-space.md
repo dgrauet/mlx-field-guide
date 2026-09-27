@@ -314,7 +314,7 @@ pytorch_weight = checkpoint["vae.decoder.conv_in.weight"]  # [out, in, kH, kW]
 mlx_weight = mx.array(pytorch_weight).transpose(0, 2, 3, 1)  # [out, kH, kW, in]
 ```
 
-This transposition must happen for every convolutional layer in the VAE -- and transposed convolutions in the decoder need a different permutation (see [Convolutions & Patchification](19-convolutions.md)).
+This transposition must happen for every convolutional layer in the VAE -- and transposed convolutions in the decoder need a different permutation (see [Convolutions & Patchification](19-convolutions.md)). For compression factors, latent scaling conventions, fp16 and tiling, see [VAEs in Depth](21-vae.md).
 
 ### LTX-Video's video latent space
 

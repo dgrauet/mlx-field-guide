@@ -32,6 +32,7 @@ Start here. These pages build on each other in order:
 18. [Mixture of Experts](01-foundations/18-mixture-of-experts.md) -- routers, active vs total parameters, and why MoE suits a Mac
 19. [Convolutions & Patchification](01-foundations/19-convolutions.md) -- 1D/2D/3D and transposed convolutions, patch embedding, and the MLX weight layouts
 20. [3D Representations](01-foundations/20-3d-representations.md) -- meshes, SDFs, marching cubes, and how latent 3D generators like Hunyuan3D produce a mesh
+21. [VAEs in Depth](01-foundations/21-vae.md) -- compression factors, latent normalization conventions, fp16, tiling
 
 ### Pillar 2: Ecosystem
 
