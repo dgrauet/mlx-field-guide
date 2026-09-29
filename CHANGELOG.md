@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Testing & Validation: measuring image similarity with PSNR and SSIM (reference points measured on MLX 0.32.2, data-range and seed traps); glossary entries PSNR and SSIM.
 - Foundations page 22, Audio Representations: waveform and sample rate, STFT and mel spectrograms (Whisper recipe reproduced in MLX 0.32.2, with the error of each common deviation), vocoders, neural codecs and RVQ (demonstrated in MLX), codec frame rates from configs.
 - Foundations page 21, VAEs in Depth: compression factors per model family, mean vs sample, three latent-normalization conventions (values from configs), fp16 upcasting, and measured memory for full, per-block-eval and tiled decoding.
 - Foundations page 20, 3D Representations: meshes, point clouds, voxels, SDF vs occupancy, marching cubes, latent-set 3D generation (Hunyuan3D-2.1), hierarchical volume decoding, and 3D port failures, with measurements.

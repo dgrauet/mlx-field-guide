@@ -95,6 +95,45 @@ Numerical parity on a random input proves the math; it does not prove the *exper
 
 Visual/textual inspection is necessary here but is a *complement* to numerical tests, never a replacement. "It looks right" has shipped countless broken ports.
 
+### Measuring image similarity: PSNR and SSIM
+
+"Compare images" needs a number. The standard one is **PSNR (peak signal-to-noise ratio)**, in decibels:
+
+```
+  MSE  = mean((reference - output)^2)
+  PSNR = 10 * log10(MAX^2 / MSE)        MAX = the value range: 1.0 for [0, 1],
+                                          2.0 for [-1, 1], 255 for uint8
+
+  identical images -> infinite PSNR; each +10 dB = 10x smaller squared error
+```
+
+Reference points, measured with MLX 0.32.2 on the output of an SD-VAE-shaped decoder (images in [0, 1]):
+
+```
+  comparison                                     PSNR       SSIM
+  8-bit rounding only (save as PNG)              58.9 dB     --
+  Gaussian noise, sigma 0.01                     40.0 dB    0.972
+  same decoder in bfloat16 vs float32            38.4 dB    0.973   (max |diff| 0.15)
+  Gaussian noise, sigma 0.03                     30.5 dB    0.803
+  image shifted by one pixel                     28.5 dB    0.693
+  brightness + 0.05                              26.0 dB    0.996
+  Gaussian noise, sigma 0.1                      20.0 dB    0.293
+```
+
+How to read it for a port, with the same initial noise on both sides:
+
+- **Above ~40 dB:** numerically equivalent (precision-level differences).
+- **30-40 dB:** typical for a correct port running in bf16/fp16 against an fp32 reference, or after many diffusion steps where small differences accumulate.
+- **Below ~25 dB:** a real difference. Look at the image: a shift, a color change, or a bug.
+
+Three traps:
+
+1. **Use the right `MAX`.** The same bf16/fp32 pair scores 38.4 dB in [-1, 1] with `MAX = 2`, but 32.4 dB if you compute it with `MAX = 1`, a 6 dB error from a wrong constant. `skimage.metrics.peak_signal_noise_ratio(ref, out, data_range=...)` makes the range explicit.
+2. **PSNR punishes misalignment and ignores perception.** A one-pixel shift (28.5 dB) scores like visible noise, while a uniform brightness change scores 26 dB yet keeps structure intact (SSIM 0.996). Report **SSIM** (structural similarity, 1.0 = identical structure; `skimage.metrics.structural_similarity`) alongside PSNR. For perceptual similarity, LPIPS is the usual learned metric.
+3. **"Same seed" isn't the same noise across frameworks.** PyTorch and MLX have different random generators. Generate the initial latent noise once (e.g. with NumPy), save it, and feed the identical array to both pipelines; otherwise PSNR measures two different images.
+
+For audio the same formula is usually reported as **SNR** (signal power over error power, in dB) on the waveform, or as a distance between mel spectrograms.
+
 ---
 
 ## Rung 5: Quantization Parity
@@ -139,6 +178,7 @@ Before opening a pull request on a port:
 
 - [ ] Per-layer parity passes for every non-trivial layer (`float32`, tight tolerance)
 - [ ] Full-forward parity passes on a fixed input (dtype-appropriate tolerance)
+- [ ] Image/video outputs compared with PSNR (right data range) and SSIM, from identical initial noise
 - [ ] End-to-end output inspected for the known failure signatures of the domain
 - [ ] Quantized variant tested separately and stays coherent
 - [ ] At least one regression test + committed fixtures so CI guards it
@@ -153,6 +193,9 @@ Before opening a pull request on a port:
 - pytest: [docs.pytest.org](https://docs.pytest.org/)
 - mlx-examples test suites (real-world parity test patterns): [github.com/ml-explore/mlx-examples](https://github.com/ml-explore/mlx-examples)
 - MLX unit tests (how core tests numerics): [github.com/ml-explore/mlx](https://github.com/ml-explore/mlx)
+- Wang, Z., Bovik, A. C., Sheikh, H. R., & Simoncelli, E. P. (2004). "Image Quality Assessment: From Error Visibility to Structural Similarity" (SSIM). *IEEE Transactions on Image Processing*.
+- Zhang, R., et al. (2018). "The Unreasonable Effectiveness of Deep Features as a Perceptual Metric" (LPIPS). [arxiv.org/abs/1801.03924](https://arxiv.org/abs/1801.03924)
+- `scikit-image` metrics (`peak_signal_noise_ratio`, `structural_similarity`): [scikit-image.org/docs/stable/api/skimage.metrics.html](https://scikit-image.org/docs/stable/api/skimage.metrics.html)
 
 ---
 
