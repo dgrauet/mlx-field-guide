@@ -34,6 +34,7 @@ Start here. These pages build on each other in order:
 20. [3D Representations](01-foundations/20-3d-representations.md) -- meshes, SDFs, marching cubes, and how latent 3D generators like Hunyuan3D produce a mesh
 21. [VAEs in Depth](01-foundations/21-vae.md) -- compression factors, latent normalization conventions, fp16, tiling
 22. [Audio Representations](01-foundations/22-audio-representations.md) -- waveforms, mel spectrograms, vocoders, neural codecs and RVQ
+23. [Conditioning & Guidance](01-foundations/23-conditioning-guidance.md) -- image/keyframe/mask conditioning, CFG, STG, rescale, and their port traps
 
 ### Pillar 2: Ecosystem
 
