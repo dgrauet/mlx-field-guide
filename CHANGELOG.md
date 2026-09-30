@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 23, Conditioning & Guidance: five injection mechanisms (incl. inpainting channel counts from configs and LTX's denoise mask / appended keyframes), CFG / STG / modality guidance / rescale as implemented in the LTX-2 MLX port, sigma-binned schedules, and measured batched-vs-sequential CFG cost on MLX 0.32.2.
 - Testing & Validation: measuring image similarity with PSNR and SSIM (reference points measured on MLX 0.32.2, data-range and seed traps); glossary entries PSNR and SSIM.
 - Foundations page 22, Audio Representations: waveform and sample rate, STFT and mel spectrograms (Whisper recipe reproduced in MLX 0.32.2, with the error of each common deviation), vocoders, neural codecs and RVQ (demonstrated in MLX), codec frame rates from configs.
 - Foundations page 21, VAEs in Depth: compression factors per model family, mean vs sample, three latent-normalization conventions (values from configs), fp16 upcasting, and measured memory for full, per-block-eval and tiled decoding.

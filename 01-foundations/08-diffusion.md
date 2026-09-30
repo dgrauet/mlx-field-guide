@@ -285,6 +285,8 @@ CLASSIFIER-FREE GUIDANCE
 
 CFG is why most diffusion model APIs have a `guidance_scale` or `cfg_scale` parameter. The cost: every step runs the model twice, doubling compute. Some techniques (PAG, CFG-distillation) reduce this, but standard CFG is the baseline.
 
+For CFG variants (rescale, STG, modality guidance), guidance-distilled checkpoints, and image/keyframe/mask conditioning, see [Conditioning & Guidance](23-conditioning-guidance.md).
+
 ### Conditioning: connecting text to image
 
 The text prompt reaches the model through a text encoder that converts words into embedding vectors:
