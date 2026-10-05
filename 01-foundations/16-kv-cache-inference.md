@@ -25,6 +25,22 @@ PREFILL (reading the prompt)              DECODE (writing the answer)
 
 ## How It Actually Works
 
+### Chunked prefill: `prefill_step_size`
+
+Prefill doesn't push the whole prompt through the model at once. `mlx-lm` processes it in chunks of `prefill_step_size` tokens, appending each chunk's keys and values to the cache before the next (default 2048 in `mlx_lm.generate` and `mlx_lm.server`, 512 in speculative decoding). The attention scores of a chunk span `chunk × context`, so the chunk size sets the prefill's memory peak.
+
+Measured on a 7,202-token prompt (Gemma 3 12B 4-bit, mlx-lm 0.32.0, MLX 0.32.3, M2 Pro):
+
+```
+  prefill_step_size   prefill speed   peak memory
+        256            124.9 tok/s      8.66 GB
+        512            124.2 tok/s      8.91 GB
+       2048            118.9 tok/s      9.61 GB
+       8192 (1 chunk)  106.0 tok/s     12.72 GB
+```
+
+On this machine, smaller chunks cost no speed: prefill is already compute-bound at a few hundred tokens, and a single huge chunk is *slower* while using 4 GB more. Lower `--prefill-step-size` whenever long prompts run out of memory. It matters most with a quantized KV cache, whose attention isn't fused (see below).
+
 ### Decode speed has a hard ceiling: bandwidth ÷ bytes per token
 
 To produce one token, the GPU must stream every weight of the model from memory (plus the KV cache). The arithmetic is trivial by comparison. So the upper bound on decode speed is:
@@ -96,6 +112,20 @@ mlx_lm.generate --model <model> --prompt-cache-file doc.safetensors --prompt "Su
 ```
 
 `mlx_lm.server` does this automatically: it keeps an LRU cache of recent KV caches (`--prompt-cache-size`, `--prompt-cache-bytes`) and reuses the longest matching prefix of each new request. For chat, that means each turn only prefills the new message.
+
+### The other "prefill": starting the assistant's answer
+
+The word has a second, unrelated meaning. **Prefilling the response** means writing the first tokens of the assistant's answer yourself, so the model continues from them instead of starting fresh. It's a cheap way to force a format or skip a preamble.
+
+In `mlx-lm`, `mlx_lm.generate --prefill-response "<text>"` appends a partial assistant message and builds the prompt with `continue_final_message=True` instead of `add_generation_prompt=True`. The chat template then leaves the assistant turn open. Tested with Gemma 3 12B on "Give me the capital of France and its population.":
+
+```
+  no prefill                 'The capital of France is **Paris**.\n\nAs of 2023, ...'
+  prefill '{"capital": "'    'Paris", "population": "Approximately 2.1 million ...'}'
+                               (prompt ends with: <start_of_turn>model\n{"capital": ")
+```
+
+The prefilled text is part of the prompt (it goes through the prefill phase), but it isn't part of the generated output: prepend it yourself when you parse the answer. For guaranteed structure, constrained generation is stronger (see [Agents & Tool Use](../02-ecosystem/12-agents-tool-use.md)).
 
 ### Batching: sharing one weight read across requests
 
@@ -189,7 +219,8 @@ Three rules:
 
 | Term | Definition |
 |------|------------|
-| **Prefill** | The first phase of generation: processing all prompt tokens in one parallel pass and filling the KV cache; compute-bound. |
+| **Prefill** | The first phase of generation: processing the prompt tokens in parallel (in chunks of `prefill_step_size`) and filling the KV cache; compute-bound. |
+| **Response prefill** | Writing the first tokens of the assistant's answer so the model continues from them (`--prefill-response`, `continue_final_message=True`). |
 | **Decode** | The generation phase: producing one token per forward pass; memory-bandwidth-bound because every pass reads all weights and the KV cache. |
 | **KV cache** | Stored keys and values of past tokens, per layer, so each new token only computes its own. |
 | **Sliding-window attention** | Layers that attend only to the last W tokens, so their cache stops growing at W (`RotatingKVCache` in mlx-lm). |
