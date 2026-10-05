@@ -39,6 +39,7 @@ Start here. These pages build on each other in order:
 25. [Checkpoints & Weight Formats](01-foundations/25-checkpoints-weight-formats.md) -- pickle vs safetensors, sharding, bf16 and NumPy, quantized layouts, strict loading
 26. [Apple Silicon Memory & Metal Limits](01-foundations/26-memory-metal-limits.md) -- GPU working set, MLX's cache, wired memory, buffer caps, the GPU watchdog
 27. [Custom Metal Kernels](01-foundations/27-custom-metal-kernels.md) -- mx.fast.metal_kernel: when it pays off, and its traps (grid, init_value, atomics, templates)
+28. [LoRA & Fine-Tuning in Depth](01-foundations/28-lora-finetuning.md) -- scale conventions, adapter layout, QLoRA, fusing into a quantized base, training memory
 
 ### Pillar 2: Ecosystem
 
