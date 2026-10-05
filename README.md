@@ -37,6 +37,7 @@ Start here. These pages build on each other in order:
 23. [Conditioning & Guidance](01-foundations/23-conditioning-guidance.md) -- image/keyframe/mask conditioning, CFG, STG, rescale, and their port traps
 24. [Self-Supervised Learning & World Models](01-foundations/24-self-supervised-world-models.md) -- V-JEPA 2, representation collapse, EMA encoders, action-conditioned generation (Matrix-Game)
 25. [Checkpoints & Weight Formats](01-foundations/25-checkpoints-weight-formats.md) -- pickle vs safetensors, sharding, bf16 and NumPy, quantized layouts, strict loading
+26. [Apple Silicon Memory & Metal Limits](01-foundations/26-memory-metal-limits.md) -- GPU working set, MLX's cache, wired memory, buffer caps, the GPU watchdog
 
 ### Pillar 2: Ecosystem
 

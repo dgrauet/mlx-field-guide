@@ -290,7 +290,7 @@ x = mx.random.normal((2048, 2048))
 benchmark_fn(lambda a: a @ a.T, x)
 ```
 
-**No MLX-native kernel profiler exists.** There is no tool equivalent to Nsight Compute that shows memory bandwidth utilization or SM occupancy for Metal kernels launched by MLX. This is the most significant profiling gap.
+**No Nsight Compute equivalent is built into MLX.** There is no MLX tool that reports memory bandwidth utilization or occupancy per kernel. The closest options: `mx.metal.start_capture("run.gputrace")` (with `MTL_CAPTURE_ENABLED=1`) records a Metal capture that Xcode's Metal debugger opens with every dispatch and its timing, and community tools such as [smeltr](https://github.com/dgrauet/smeltr) record command-buffer history and memory for a whole run (see [Apple Silicon Memory & Metal Limits](../01-foundations/26-memory-metal-limits.md)). Kernel-level hardware counters remain the main profiling gap.
 
 ### Quantization: mlx-lm quantize
 
