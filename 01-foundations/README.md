@@ -35,6 +35,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 25 | [Checkpoints & Weight Formats](25-checkpoints-weight-formats.md) | safetensors, sharding, bf16 vs NumPy, quantized layouts, strict loading |
 | 26 | [Apple Silicon Memory & Metal Limits](26-memory-metal-limits.md) | GPU working set, MLX cache and limits, command buffers, the GPU watchdog |
 | 27 | [Custom Metal Kernels](27-custom-metal-kernels.md) | Writing GPU kernels with mx.fast.metal_kernel, and their pitfalls |
+| 28 | [LoRA & Fine-Tuning in Depth](28-lora-finetuning.md) | LoRA scale conventions, QLoRA, fusing, gradient checkpointing, training memory |
 
 ## Prerequisites
 

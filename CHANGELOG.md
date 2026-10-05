@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 28, LoRA & Fine-Tuning in Depth: scale conventions (PEFT alpha/r vs mlx-lm scale 20 vs ltx-trainer), PEFT↔MLX adapter transpose, QLoRA, fusing into a 4-bit base (when re-quantization erases an adapter, measured), training memory incl. MLX's same-dtype AdamW state, gradient checkpointing (measured on Gemma 3 1B).
 - Foundations page 27, Custom Metal Kernels: `mx.fast.metal_kernel` anatomy, when it beats `mx.compile`/built-ins (measured), grid semantics, `init_value`, atomics, non-contiguous inputs, template recompiles, math modes, gradients; grounded in mlx-arsenal's rasterizer.
 - Foundations page 26, Apple Silicon Memory & Metal Limits: device limits from `mx.device_info()`, MLX's buffer cache, memory/cache/wired limits (behaviour tested on MLX 0.32.3), RSS vs physical footprint, `max_buffer_length`, command-buffer splitting (counted with smeltr) and the GPU watchdog, grounded in the LTX-2, Hunyuan3D and Matrix-Game ports.
 - KV Cache & Inference: chunked prefill (`prefill_step_size`, measured: smaller chunks cut peak memory with no speed loss on an M2 Pro) and response prefill (`--prefill-response`, `continue_final_message`), tested on mlx-lm 0.32.0.
