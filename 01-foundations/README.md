@@ -31,6 +31,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 21 | [VAEs in Depth](21-vae.md) | Latent normalization per model family, fp16, tiling, VAE port traps |
 | 22 | [Audio Representations](22-audio-representations.md) | Waveforms, mel spectrograms, codecs, and preprocessing parity |
 | 23 | [Conditioning & Guidance](23-conditioning-guidance.md) | How conditions enter a diffusion model; CFG, STG, rescale, schedules |
+| 24 | [Self-Supervised Learning & World Models](24-self-supervised-world-models.md) | JEPA, EMA target encoders, probes, action-conditioned world models |
 
 ## Prerequisites
 
