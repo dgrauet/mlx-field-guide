@@ -166,7 +166,8 @@ MLX SOFTWARE STACK
     mlx-vlm         -- vision-language models
     mlx-audio       -- audio generation (e.g., Kokoro, Parler TTS)
     mlx-community   -- Hugging Face org with 1000+ converted models
-    mlx-forge       -- tools for porting and kernel development
+    mlx-forge       -- (community) checkpoint conversion and quantization
+    mlx-arsenal     -- (community) building blocks missing from MLX core
     mlx-examples    -- reference implementations (LLaMA, Stable Diffusion, etc.)
 ```
 
@@ -226,9 +227,9 @@ loss, grads = mx.value_and_grad(loss_fn)(params, x)
 
 The gap analysis above identifies where MLX needs work. If you are porting CUDA to MLX on projects like LTX-Video, Matrix-Game-mlx, or mlx-forge, these are the areas where your work has the highest leverage:
 
-**Custom video generation kernels.** Temporal attention, 3D convolutions, causal masking for video -- none of these have well-optimized Metal implementations in the public MLX ecosystem. Porting LTX-Video's custom CUDA kernels to Metal and contributing them to mlx-forge would close a real gap.
+**Custom video generation kernels.** MLX has fused attention (with causal masks) and 3D convolutions, but long video sequences remain far slower than FlashAttention on CUDA, and structured sparse attention patterns have no specialized kernels. Prototyping such kernels with `mx.fast.metal_kernel` (see [Custom Metal Kernels](../01-foundations/27-custom-metal-kernels.md)) and contributing the winners upstream would close a real gap.
 
-**Benchmark and profiling tooling.** MLX has `mx.metal.get_peak_memory()` and Instruments, but no equivalent to PyTorch's `torch.profiler` or NVIDIA's Nsight Systems for kernel-level ML profiling. A profiling utility built specifically for MLX workloads would be valuable.
+**Benchmark and profiling tooling.** MLX has `mx.get_peak_memory()`, Metal captures (`mx.metal.start_capture`) and Instruments, but no equivalent to PyTorch's `torch.profiler` or NVIDIA's Nsight Systems for kernel-level ML profiling. A profiling utility built specifically for MLX workloads would be valuable.
 
 **[Model](../glossary.md#model) conversion pipelines.** mlx-community has 1000+ models, but not all model architectures are covered. Systematic conversion of missing architectures (especially video models) with validation tooling would help.
 

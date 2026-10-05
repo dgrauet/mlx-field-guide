@@ -369,7 +369,7 @@ variance = mx.mean(residual ** 2, axis=-1, keepdims=True)
 out = residual * mx.rsqrt(variance + eps) * weight
 ```
 
-**Option 2: Write a Metal kernel.** For operations that genuinely cannot be efficiently expressed as a composition of primitives, you can write a kernel in Metal Shading Language and register it with MLX via its C++ extension API. This is the MLX equivalent of writing a CUDA `.cu` file. More work, but necessary for operations with complex memory access patterns (e.g., custom attention variants with non-standard masking or indexing).
+**Option 2: Write a Metal kernel.** For operations that genuinely cannot be efficiently expressed as a composition of primitives, you can write a kernel in Metal Shading Language: from Python with `mx.fast.metal_kernel` (JIT-compiled, no build step; see [Custom Metal Kernels](../01-foundations/27-custom-metal-kernels.md)), or as a C++ extension when it must be a packaged primitive. This is the MLX equivalent of writing a CUDA `.cu` file. More work, but necessary for operations with complex memory access patterns (e.g., custom attention variants with non-standard masking or indexing).
 
 **Option 3: Accept the performance cost.** For non-critical operations, running a decomposed Python implementation on MLX may be fast enough. Profile first -- Apple Silicon's unified memory and fast on-package bandwidth mean "slow" MLX code is often faster than expected.
 

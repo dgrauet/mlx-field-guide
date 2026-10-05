@@ -314,9 +314,13 @@ def fused_add_rms_norm(x: mx.array, residual: mx.array,
 
 **Option 2: Write a Metal kernel**
 
-For operations that cannot be efficiently expressed as composed primitives -- operations with complex memory access patterns, reduction operations with specific tiling requirements, or custom attention variants -- you can write a Metal Shading Language kernel and register it with MLX.
+For operations that cannot be efficiently expressed as composed primitives -- operations with complex memory access patterns, reduction operations with specific tiling requirements, or custom attention variants -- you can write a Metal Shading Language kernel.
 
-This requires C++ and MSL. The mechanism is MLX's custom primitive system:
+**Start with `mx.fast.metal_kernel`**: you write the body of the kernel as a Python string, MLX generates the signature, JIT-compiles it and calls it on MLX arrays. No C++ build. See [Custom Metal Kernels](../01-foundations/27-custom-metal-kernels.md) for the API, measurements and pitfalls (grid = threads, `init_value`, atomics, non-contiguous inputs).
+
+A full C++ extension is only worth it when the operation must be a reusable primitive with its own CPU fallback and transforms, packaged as a library:
+
+The C++ mechanism is MLX's custom primitive system (bindings are built with nanobind; see the MLX [extensions documentation](https://ml-explore.github.io/mlx/build/html/dev/extensions.html)):
 
 ```cpp
 // In a .cpp file compiled as a Python extension:
@@ -346,13 +350,13 @@ public:
     }
 };
 
-// 3. Expose to Python via pybind11
+// 3. Expose to Python via nanobind
 // Then call from Python:
 // import your_extension
 // out = your_extension.my_op(a, b)
 ```
 
-See `mlx-forge` ([github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge)) for working examples of this pattern.
+For `metal_kernel` examples in a real port, see the rasterizer in [mlx-arsenal](https://github.com/dgrauet/mlx-arsenal) (`rasterize/`); for a full C++ extension, the MLX documentation's `axpby` example.
 
 **Option 3: Accept the Python fallback**
 
@@ -984,7 +988,8 @@ The sections above cover the deep failures. For fast lookup of simpler issues:
 - MLX documentation -- core API: [ml-explore.github.io/mlx/](https://ml-explore.github.io/mlx/)
 - MLX documentation -- Python API reference: [ml-explore.github.io/mlx/build/html/python/index.html](https://ml-explore.github.io/mlx/build/html/python/index.html)
 - mlx-examples (reference implementations): [github.com/ml-explore/mlx-examples](https://github.com/ml-explore/mlx-examples)
-- mlx-forge (porting tools and Metal kernel examples): [github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge)
+- mlx-forge (checkpoint conversion, quantization, splitting and validation for MLX): [github.com/dgrauet/mlx-forge](https://github.com/dgrauet/mlx-forge)
+- mlx-arsenal (reusable MLX building blocks, incl. `metal_kernel` examples): [github.com/dgrauet/mlx-arsenal](https://github.com/dgrauet/mlx-arsenal)
 - HuggingFace safetensors documentation: [huggingface.co/docs/safetensors](https://huggingface.co/docs/safetensors)
 - Apple Metal Shading Language specification: [developer.apple.com/metal/Metal-Shading-Language-Specification.pdf](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
 

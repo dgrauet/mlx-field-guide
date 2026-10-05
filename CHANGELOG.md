@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 27, Custom Metal Kernels: `mx.fast.metal_kernel` anatomy, when it beats `mx.compile`/built-ins (measured), grid semantics, `init_value`, atomics, non-contiguous inputs, template recompiles, math modes, gradients; grounded in mlx-arsenal's rasterizer.
 - Foundations page 26, Apple Silicon Memory & Metal Limits: device limits from `mx.device_info()`, MLX's buffer cache, memory/cache/wired limits (behaviour tested on MLX 0.32.3), RSS vs physical footprint, `max_buffer_length`, command-buffer splitting (counted with smeltr) and the GPU watchdog, grounded in the LTX-2, Hunyuan3D and Matrix-Game ports.
 - KV Cache & Inference: chunked prefill (`prefill_step_size`, measured: smaller chunks cut peak memory with no speed loss on an M2 Pro) and response prefill (`--prefill-response`, `continue_final_message`), tested on mlx-lm 0.32.0.
 - Foundations page 25, Checkpoints & Weight Formats: formats and pickle safety (tested on torch 2.14.1), safetensors layout, lazy `mx.load`, sharding and a stale index found in `mlx-community/gemma-3-12b-it-4bit`, bf16 vs NumPy failures, MLX quantized layout, strict loading and `sanitize()`.
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- mlx-forge was linked as `github.com/ml-explore/mlx-forge` (404) in 7 places and described as an ml-explore hub for porting and Metal kernels; it is a community conversion tool at `github.com/dgrauet/mlx-forge`. Porting Guide / Frameworks now recommend `mx.fast.metal_kernel` before a C++ extension (nanobind, not pybind11). Open Opportunities #8 and the CUDA-vs-MLX overview no longer claim MLX lacks Conv3d, causal masking or memory-efficient attention (fused SDPA measured at 0.2 GB for 16K tokens).
 - Tooling: "no MLX-native kernel profiler exists" now mentions `mx.metal.start_capture` (Xcode Metal debugger) and smeltr; per-kernel hardware counters remain the gap.
 - Audio: the Whisper diagram said the mel spectrogram has T/2 frames; it has 3000 frames per 30 s, halved to 1500 by the encoder's conv stem.
 - Porting Guide: MLX has had `nn.Conv3d` (and transposed convolutions) for a long time; the guide said it didn't.

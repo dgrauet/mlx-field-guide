@@ -38,6 +38,7 @@ Start here. These pages build on each other in order:
 24. [Self-Supervised Learning & World Models](01-foundations/24-self-supervised-world-models.md) -- V-JEPA 2, representation collapse, EMA encoders, action-conditioned generation (Matrix-Game)
 25. [Checkpoints & Weight Formats](01-foundations/25-checkpoints-weight-formats.md) -- pickle vs safetensors, sharding, bf16 and NumPy, quantized layouts, strict loading
 26. [Apple Silicon Memory & Metal Limits](01-foundations/26-memory-metal-limits.md) -- GPU working set, MLX's cache, wired memory, buffer caps, the GPU watchdog
+27. [Custom Metal Kernels](01-foundations/27-custom-metal-kernels.md) -- mx.fast.metal_kernel: when it pays off, and its traps (grid, init_value, atomics, templates)
 
 ### Pillar 2: Ecosystem
 
