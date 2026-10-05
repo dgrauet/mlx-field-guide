@@ -208,7 +208,7 @@ loss, grads = mx.value_and_grad(loss_fn)(params, x)
 | Capability | CUDA | MLX | Gap |
 |-----------|------|-----|-----|
 | **Hardware availability** | 🟢 Cloud, consumer, data center | 🟡 Mac only (no cloud, no Linux) | Large -- no cloud MLX option; must own Apple Silicon hardware |
-| **Multi-GPU / distributed training** | 🟢 NCCL, FSDP, Megatron-LM, full ecosystem | 🔴 No multi-GPU support | Critical gap for large model training |
+| **Multi-GPU / distributed training** | 🟢 NCCL, FSDP, Megatron-LM, full ecosystem | 🟡 `mx.distributed` across several Macs: data, tensor and pipeline parallelism, `fully_shard` (see [Distributed MLX](../01-foundations/29-distributed-mlx.md)) | Large -- a handful of Macs over Thunderbolt, not a GPU cluster |
 | **Community size** | 🟢 Millions of developers, 15+ years of content | 🟡 Growing, thousands of active contributors | Orders of magnitude smaller; fewer examples, answers, tutorials |
 | **Documentation** | 🟢 Exhaustive at every level | 🟡 Good core docs; thin on advanced topics | Noticeable gap in advanced kernel writing, custom ops |
 | **Pre-trained models** | 🟢 Tens of thousands on Hugging Face | 🟡 1000+ on mlx-community; growing | CUDA models run as-is; MLX requires conversion |
@@ -235,7 +235,7 @@ The gap analysis above identifies where MLX needs work. If you are porting CUDA 
 
 **Documentation: advanced topics.** Core MLX operations are documented. Writing custom Metal kernels with MLX's C++ extension API is not. Contributions here compound -- good docs help every future porter.
 
-**Multi-chip exploration.** Apple Silicon does not support NCCL-style multi-GPU, but some workloads could theoretically distribute across CPU and GPU within the same chip, or use the Neural Engine for specific operations. This is genuinely unexplored territory.
+**Multi-chip exploration.** Multi-Mac runs are supported through `mx.distributed` (ring and JACCL backends, see [Distributed MLX](../01-foundations/29-distributed-mlx.md)); what remains open is splitting work across CPU and GPU within one chip, or using the Neural Engine for specific operations.
 
 ---
 

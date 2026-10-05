@@ -229,19 +229,17 @@ A proper MLX profiler would:
 
 ### 11. Distributed Inference Across Multiple Macs
 
-**What the gap is:** MLX is single-device only. No multi-GPU, no multi-machine. The largest unified memory configuration (Mac Studio M2/M4 Ultra, 192 GB) cannot run the largest open models (Llama 3 405B at bfloat16 = 810 GB). Running those models requires distributing across multiple machines.
+**What the gap is:** The primitives now exist: `mx.distributed` provides collectives over a TCP ring (Ethernet/Thunderbolt) or RDMA over Thunderbolt 5 (JACCL, macOS 26.2+), `shard_linear` gives [tensor](../glossary.md#tensor) parallelism (including 4-bit layers), and many mlx-lm models implement `shard()` or pipeline parallelism (see [Distributed MLX](../01-foundations/29-distributed-mlx.md)). What's still missing:
+- an `all_to_all` collective, needed for sequence-parallel schemes such as Ulysses (the Matrix-Game MLX port switched to head-wise tensor parallelism for this reason);
+- distributed support across more model families (video DiTs, VLMs) and in serving;
+- published scaling benchmarks over Thunderbolt 5 / JACCL for large models.
 
-Distributed inference would require:
-- [Tensor](../glossary.md#tensor) parallelism: split attention heads across devices
-- Pipeline parallelism: split layers across devices
-- Communication primitives: send/receive tensors over a network or Thunderbolt
-
-**Why it matters:** 405B+ models are inaccessible on any single Apple Silicon machine. Distributed inference across 4-8 Mac Studios would make them accessible. This is also the only path to MLX training at scale.
+**Why it matters:** The largest open models don't fit on any single Apple Silicon machine. Making multi-Mac inference routine, beyond LLMs, is what opens them up.
 
 **Where to start:**
-- [github.com/ml-explore/mlx/discussions](https://github.com/ml-explore/mlx/discussions) -- search for "distributed"; there is ongoing discussion about the design
-- This is a design problem as much as an implementation problem: what communication primitives does MLX need? What topology makes sense for Mac-to-Mac (Thunderbolt? Ethernet?)
-- Reference: NCCL's collective operation API as the conceptual target; Petals (collaborative inference for large models) as an alternative architecture
+- MLX distributed documentation: [ml-explore.github.io/mlx/build/html/usage/distributed.html](https://ml-explore.github.io/mlx/build/html/usage/distributed.html)
+- Validate any sharding with `mlx.launch -n 2` on one Mac against the unsharded model before scaling out
+- Reference: Megatron-LM's column/row tensor parallelism (what `shard_linear` implements); exo and Petals for alternative multi-device architectures
 
 **Difficulty:** Hard. This is a systems engineering problem requiring new MLX primitives, not just a Python implementation. The Apple team would need to be involved in the design.
 
