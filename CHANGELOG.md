@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 26, Apple Silicon Memory & Metal Limits: device limits from `mx.device_info()`, MLX's buffer cache, memory/cache/wired limits (behaviour tested on MLX 0.32.3), RSS vs physical footprint, `max_buffer_length`, command-buffer splitting (counted with smeltr) and the GPU watchdog, grounded in the LTX-2, Hunyuan3D and Matrix-Game ports.
 - KV Cache & Inference: chunked prefill (`prefill_step_size`, measured: smaller chunks cut peak memory with no speed loss on an M2 Pro) and response prefill (`--prefill-response`, `continue_final_message`), tested on mlx-lm 0.32.0.
 - Foundations page 25, Checkpoints & Weight Formats: formats and pickle safety (tested on torch 2.14.1), safetensors layout, lazy `mx.load`, sharding and a stale index found in `mlx-community/gemma-3-12b-it-4bit`, bf16 vs NumPy failures, MLX quantized layout, strict loading and `sanitize()`.
 - Foundations page 24, Self-Supervised Learning & World Models: families of self-supervised objectives, V-JEPA 2 (context/target encoders, EMA, target LayerNorm, probes, action-conditioned predictor), Matrix-Game (action module, camera-aware memory), a representation-collapse demonstration in MLX 0.32.3, and the EMA-checkpoint loading trap.
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Tooling: "no MLX-native kernel profiler exists" now mentions `mx.metal.start_capture` (Xcode Metal debugger) and smeltr; per-kernel hardware counters remain the gap.
 - Audio: the Whisper diagram said the mel spectrogram has T/2 frames; it has 3000 frames per 30 s, halved to 1500 by the encoder's conv stem.
 - Porting Guide: MLX has had `nn.Conv3d` (and transposed convolutions) for a long time; the guide said it didn't.
 - LLMs, Serving, Frameworks, Open Opportunities: `mlx_lm.server` was described as single-request with experimental speculative decoding; it now has continuous batching, prompt caching and `--draft-model`.
