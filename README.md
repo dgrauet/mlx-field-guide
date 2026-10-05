@@ -36,6 +36,7 @@ Start here. These pages build on each other in order:
 22. [Audio Representations](01-foundations/22-audio-representations.md) -- waveforms, mel spectrograms, vocoders, neural codecs and RVQ
 23. [Conditioning & Guidance](01-foundations/23-conditioning-guidance.md) -- image/keyframe/mask conditioning, CFG, STG, rescale, and their port traps
 24. [Self-Supervised Learning & World Models](01-foundations/24-self-supervised-world-models.md) -- V-JEPA 2, representation collapse, EMA encoders, action-conditioned generation (Matrix-Game)
+25. [Checkpoints & Weight Formats](01-foundations/25-checkpoints-weight-formats.md) -- pickle vs safetensors, sharding, bf16 and NumPy, quantized layouts, strict loading
 
 ### Pillar 2: Ecosystem
 

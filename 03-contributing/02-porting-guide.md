@@ -392,7 +392,7 @@ If the custom op is 5ms but the full forward pass is 2000ms, optimizing the cust
 
 ## Step 4: Convert the Weights
 
-[Weight](../glossary.md#weight) conversion is the part that breaks most ports. The architecture and the weights must agree on:
+[Weight](../glossary.md#weight) conversion is the part that breaks most ports (for file formats, sharding, bf16 and strict loading, see [Checkpoints & Weight Formats](../01-foundations/25-checkpoints-weight-formats.md)). The architecture and the weights must agree on:
 - Key naming (the dictionary key for each weight tensor)
 - Tensor shape (including transpositions)
 - Data type
