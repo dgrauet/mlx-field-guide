@@ -178,7 +178,7 @@ SAMPLING-RELATED "PORT BUGS" (the model is fine, the decoding differs)
 - Keskar, N. S., et al. (2019). "CTRL: A Conditional Transformer Language Model for Controllable Generation" (repetition penalty). [arxiv.org/abs/1909.05858](https://arxiv.org/abs/1909.05858)
 - Nguyen, M., et al. (2024). "Turning Up the Heat: Min-p Sampling for Creative and Coherent LLM Outputs." [arxiv.org/abs/2407.01082](https://arxiv.org/abs/2407.01082)
 - Qwen3-8B model card and `generation_config.json` (recommended settings, no greedy in thinking mode): [huggingface.co/Qwen/Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B)
-- Filter-order measurements on this page: `mlx-lm` 0.31.3 with MLX 0.32.2, using its own `apply_top_p` / `apply_min_p` on a toy distribution.
+- Filter-order measurements on this page: `mlx-lm` 0.32.0 with MLX 0.32.3 (same counts on 0.31.3), using its own `apply_top_p` / `apply_min_p` on a toy distribution.
 
 ---
 

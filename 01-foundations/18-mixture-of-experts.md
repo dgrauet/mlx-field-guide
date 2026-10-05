@@ -65,18 +65,18 @@ This is why `mlx-lm` conversions **stack** the experts. A Hugging Face checkpoin
 
 ### Measured: big-model memory, small-model speed
 
-One MoE layer with Qwen3-30B-A3B's dimensions (hidden 2048, 128 experts of 768, top-8), 4-bit, compared with two dense layers -- one with the same *active* size, one with the same *total* size (MLX 0.32.2, M2 Pro):
+One MoE layer with Qwen3-30B-A3B's dimensions (hidden 2048, 128 experts of 768, top-8), 4-bit, compared with two dense layers -- one with the same *active* size, one with the same *total* size (MLX 0.32.3, M2 Pro):
 
 ```
                                      weights   1 token    512 tokens
-  MoE, 128 experts, top-8             379 MB   0.45 ms     24.2 ms
-  dense, same ACTIVE size (8×768)      24 MB   0.35 ms     13.3 ms
-  dense, same TOTAL size (128×768)    377 MB   2.26 ms    201.7 ms
+  MoE, 128 experts, top-8             379 MB   0.56 ms     19.4 ms
+  dense, same ACTIVE size (8×768)      24 MB   0.82 ms     11.2 ms
+  dense, same TOTAL size (128×768)    377 MB   2.26 ms    202.7 ms
 ```
 
 - **Memory** is that of the total size: all 128 experts must be resident, because the next token may pick any of them.
-- **Decode (1 token)** costs close to the small dense layer (1.3x, the rest is routing overhead) and 5x less than the large one: only 8 experts' weights are read.
-- **Prefill (512 tokens)** costs about 1.8x the small dense layer -- different tokens pick different experts, so almost every expert gets read, plus routing overhead -- but still ~8x less than the equally large dense layer.
+- **Decode (1 token)** costs about the same as the small dense layer (both are sub-millisecond and dominated by fixed overheads; the order flips between runs) and 4-5x less than the large one: only 8 experts' weights are read.
+- **Prefill (512 tokens)** costs about 1.7x the small dense layer -- different tokens pick different experts, so almost every expert gets read, plus routing overhead -- but still ~10x less than the equally large dense layer.
 
 At the whole-model level, the [decode ceiling](16-kv-cache-inference.md) formula (bandwidth ÷ bytes read per token) uses the *active* bytes. `mlx-community/Qwen3-30B-A3B-4bit` is 17.2 GB on disk; reading ~3.3/30.5 of it per token is ~1.9 GB, so the ceiling on a 200 GB/s M2 Pro is ~100 tok/s, versus ~12 tok/s for a dense 30B model of the same file size.
 
@@ -153,7 +153,7 @@ Porting rules:
 - DeepSeek-AI (2024). "DeepSeek-V3 Technical Report" (sigmoid routing, auxiliary-loss-free bias, shared experts). [arxiv.org/abs/2412.19437](https://arxiv.org/abs/2412.19437)
 - `mlx-lm` source: `mlx_lm/models/switch_layers.py` (`SwitchLinear`, `SwitchGLU`, expert sorting), `mixtral.py`, `qwen3_moe.py`, `deepseek_v3.py` (routing variants and `sanitize()` stacking): [github.com/ml-explore/mlx-lm](https://github.com/ml-explore/mlx-lm)
 - Qwen3-30B-A3B and Qwen1.5-MoE-A2.7B `config.json` (routing fields): [huggingface.co/Qwen/Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B)
-- Layer timings on this page: MLX 0.32.2 / `mlx-lm` 0.31.3 on an M2 Pro, one synthetic 4-bit layer with random weights; whole-model figures are derived from the bandwidth formula, not measured.
+- Layer timings on this page: MLX 0.32.3 / `mlx-lm` 0.32.0 on an M2 Pro, one synthetic 4-bit layer with random weights; whole-model figures are derived from the bandwidth formula, not measured.
 
 ---
 

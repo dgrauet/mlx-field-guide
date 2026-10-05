@@ -33,4 +33,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Pages 15-18 re-measured on MLX 0.32.3 / mlx-lm 0.32.0. Same conclusions; `--kv-bits` in `mlx_lm.server` is attributed to mlx-lm 0.32.0 (it was not in 0.31.3); KV cache size now distinguishes stored (462 MB) from allocated (470 MB) bytes.
 - Pages 15-18 re-measured on MLX 0.32.2 (latest release) instead of 0.31.1. Conclusions unchanged; speculative decoding on the M2 Pro test setup now shows no gain at k=2 (was +3%).

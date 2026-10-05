@@ -228,7 +228,7 @@ CONVOLUTION PORT FAILURES
 - Odena, A., Dumoulin, V., & Olah, C. (2016). "Deconvolution and Checkerboard Artifacts." [distill.pub/2016/deconv-checkerboard](https://distill.pub/2016/deconv-checkerboard/)
 - Shi, W., et al. (2016). "Real-Time Single Image and Video Super-Resolution Using an Efficient Sub-Pixel Convolutional Neural Network" (pixel shuffle). [arxiv.org/abs/1609.05158](https://arxiv.org/abs/1609.05158)
 - Dosovitskiy, A., et al. (2020). "An Image is Worth 16x16 Words" (ViT patch embedding). [arxiv.org/abs/2010.11929](https://arxiv.org/abs/2010.11929)
-- Every MLX-vs-PyTorch equivalence and limitation on this page: MLX 0.32.2 against PyTorch on CPU, random weights and inputs (the grouped transposed-convolution bug: reproduced on 0.31.1, fixed in 0.32.2).
+- Every MLX-vs-PyTorch equivalence and limitation on this page: MLX 0.32.2 against PyTorch on CPU, random weights and inputs (the grouped transposed-convolution bug: reproduced on 0.31.1, fixed in 0.32.2). Version-sensitive claims rechecked on MLX 0.32.3.
 
 ---
 
