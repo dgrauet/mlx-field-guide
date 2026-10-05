@@ -139,7 +139,7 @@ These require either deeper MLX knowledge, architecture-specific expertise, or s
 **Why it matters:** Video generation is the frontier of Apple Silicon ML. LTX-Video running well on Apple Silicon would demonstrate that the hardware is viable for cutting-edge generative models, not just LLMs.
 
 **Where to start:**
-- [github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge) -- where new porting work on video models is coordinated
+- [github.com/dgrauet/ltx-2-mlx](https://github.com/dgrauet/ltx-2-mlx) -- a community MLX port of LTX-2, with weight conversion via [mlx-forge](https://github.com/dgrauet/mlx-forge)
 - [github.com/Lightricks/LTX-Video](https://github.com/Lightricks/LTX-Video) -- the original PyTorch implementation
 - Start with the VAE (smaller, self-contained, easier to validate); then the DiT; then end-to-end inference
 - Temporal attention is the hard part -- see the custom op strategies in the [Porting Guide](02-porting-guide.md)
@@ -171,20 +171,20 @@ These require C++, Metal Shading Language, or are genuinely open research proble
 
 ### 8. Custom Metal Kernels for Video Generation
 
-**What the gap is:** Video generation models use operations that do not have efficient MLX implementations:
-- **Temporal attention:** 3D attention over (batch, time, height*width, head_dim) tensors. The naive MLX implementation creates large intermediate tensors. [Flash Attention](../glossary.md#flash-attention)-style tiling over the temporal dimension does not exist in MLX.
-- **3D convolutions:** `nn.Conv3d` is not in MLX. Video models (including LTX-Video's VAE) use 3D convolutions for temporal feature extraction.
-- **Causal video masking:** Attention masking that enforces temporal causality in video DiT models has no optimized implementation.
+**What the gap is:** The basics exist -- `mx.fast.scaled_dot_product_attention` is a fused, memory-efficient attention that supports `mask="causal"` (16,384 tokens × 24 heads peaked at 0.2 GB on MLX 0.32.3, where a materialized score matrix would need 12.9 GB), and `nn.Conv3d` / `nn.ConvTranspose3d` exist (see [Convolutions](../01-foundations/19-convolutions.md)). What's missing for video models:
+- **Speed parity with FlashAttention on long video sequences:** attention over ~13,000 patches per step dominates generation time on Apple Silicon (the Matrix-Game MLX port measures minutes per 2-second clip).
+- **Structured sparse attention:** block-sparse, sliding-window or frame-local patterns expressed as array masks don't get a specialized kernel.
+- **Grouped 3D convolutions:** `groups != 1` is unsupported in `conv3d` (MLX 0.32.3); ports split per group.
 
 **Why it matters:** These kernels are on the critical path of every video generation forward pass. Without them, video generation on Apple Silicon is either slow (large intermediate tensors) or requires approximations (decomposed temporal attention) that hurt quality or speed.
 
 **Where to start:**
-- [github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge) -- this is where custom Metal kernels for MLX are being developed
+- [Custom Metal Kernels](../01-foundations/27-custom-metal-kernels.md) -- prototyping a kernel from Python with `mx.fast.metal_kernel` before committing to C++
 - [github.com/ml-explore/mlx](https://github.com/ml-explore/mlx) -- the existing Metal kernel implementations are in `mlx/backend/metal/kernels/`; study these before writing new ones
 - Apple's Metal Shading Language specification: [developer.apple.com/metal/](https://developer.apple.com/metal/)
 - Start by writing the [CPU](../glossary.md#cpu) fallback (pure MLX operations), validate correctness, then replace with a Metal kernel
 
-**Difficulty:** Hard. Requires C++ for the MLX primitive, Metal Shading Language for the GPU kernel, and careful validation against a reference implementation.
+**Difficulty:** Hard. Requires Metal Shading Language (prototyped through `mx.fast.metal_kernel`; C++ only for a packaged primitive) and careful validation against a reference implementation.
 
 ---
 
@@ -289,7 +289,7 @@ The best way to find what the community needs right now (not just what this page
 ## Sources
 
 - ml-explore GitHub org issues: [github.com/ml-explore/mlx/issues](https://github.com/ml-explore/mlx/issues), [github.com/ml-explore/mlx-examples/issues](https://github.com/ml-explore/mlx-examples/issues)
-- mlx-forge: [github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge)
+- mlx-forge: [github.com/dgrauet/mlx-forge](https://github.com/dgrauet/mlx-forge)
 - mflux issues: [github.com/filipstrand/mflux/issues](https://github.com/filipstrand/mflux/issues)
 - mlx-vlm: [github.com/Blaizzy/mlx-vlm](https://github.com/Blaizzy/mlx-vlm)
 - mlx-audio: [github.com/lucasnewman/mlx-audio](https://github.com/lucasnewman/mlx-audio)

@@ -34,6 +34,7 @@ These pages build on each other. If you're starting from zero, read them in orde
 | 24 | [Self-Supervised Learning & World Models](24-self-supervised-world-models.md) | JEPA, EMA target encoders, probes, action-conditioned world models |
 | 25 | [Checkpoints & Weight Formats](25-checkpoints-weight-formats.md) | safetensors, sharding, bf16 vs NumPy, quantized layouts, strict loading |
 | 26 | [Apple Silicon Memory & Metal Limits](26-memory-metal-limits.md) | GPU working set, MLX cache and limits, command buffers, the GPU watchdog |
+| 27 | [Custom Metal Kernels](27-custom-metal-kernels.md) | Writing GPU kernels with mx.fast.metal_kernel, and their pitfalls |
 
 ## Prerequisites
 

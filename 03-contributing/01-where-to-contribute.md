@@ -63,8 +63,8 @@ FLUX image generation on Apple Silicon. A clean, standalone MLX port of Black Fo
 **[mlx-vlm](https://github.com/Blaizzy/mlx-vlm)** (Blaizzy)
 Vision-language models on MLX. LLaVA, Qwen-VL, Phi-3 Vision, and others. One of the few places multi-modal models are being ported systematically to Apple Silicon.
 
-**[mlx-forge](https://github.com/ml-explore/mlx-forge)** -- porting and kernel tooling.
-Tools for porting [CUDA](../glossary.md#cuda) models to MLX. An opinionated directory of utilities, weight conversion helpers, and in-development Metal kernel work. If you are doing serious porting work on LTX-Video or [Matrix](../glossary.md#matrix)-Game, this is where your utilities likely belong.
+**[mlx-forge](https://github.com/dgrauet/mlx-forge)** and **[mlx-arsenal](https://github.com/dgrauet/mlx-arsenal)** -- community porting tools (not part of the ml-explore org).
+mlx-forge converts, quantizes, splits and validates checkpoints for MLX, with per-model recipes; mlx-arsenal collects reusable building blocks missing from MLX core (spatial ops, attention helpers, a Metal rasterizer). Useful when porting [CUDA](../glossary.md#cuda) video, image and 3D models such as LTX-Video or [Matrix](../glossary.md#matrix)-Game.
 
 **Individual model ports:**
 - Matrix-Game-mlx (video generation port)
@@ -209,7 +209,8 @@ Apple Silicon comes in too many configurations (M1/M2/M3/M4, Pro/Max/Ultra, 8GB/
 - mlx core repository: [github.com/ml-explore/mlx](https://github.com/ml-explore/mlx)
 - mlx-examples repository: [github.com/ml-explore/mlx-examples](https://github.com/ml-explore/mlx-examples)
 - mlx-data repository: [github.com/ml-explore/mlx-data](https://github.com/ml-explore/mlx-data)
-- mlx-forge repository: [github.com/ml-explore/mlx-forge](https://github.com/ml-explore/mlx-forge)
+- mlx-forge repository: [github.com/dgrauet/mlx-forge](https://github.com/dgrauet/mlx-forge)
+- mlx-arsenal repository: [github.com/dgrauet/mlx-arsenal](https://github.com/dgrauet/mlx-arsenal)
 - mlx-community on Hugging Face: [huggingface.co/mlx-community](https://huggingface.co/mlx-community)
 - mlx-audio: [github.com/lucasnewman/mlx-audio](https://github.com/lucasnewman/mlx-audio)
 - mflux: [github.com/filipstrand/mflux](https://github.com/filipstrand/mflux)
