@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Foundations page 29, Distributed MLX: collectives, backends (ring, JACCL, MPI, NCCL), `mlx.launch`, data / tensor / pipeline parallelism and `fully_shard`, verified with 2 local ranks on MLX 0.32.3 (incl. tensor-parallel 4-bit layers).
 - Foundations page 28, LoRA & Fine-Tuning in Depth: scale conventions (PEFT alpha/r vs mlx-lm scale 20 vs ltx-trainer), PEFT↔MLX adapter transpose, QLoRA, fusing into a 4-bit base (when re-quantization erases an adapter, measured), training memory incl. MLX's same-dtype AdamW state, gradient checkpointing (measured on Gemma 3 1B).
 - Foundations page 27, Custom Metal Kernels: `mx.fast.metal_kernel` anatomy, when it beats `mx.compile`/built-ins (measured), grid semantics, `init_value`, atomics, non-contiguous inputs, template recompiles, math modes, gradients; grounded in mlx-arsenal's rasterizer.
 - Foundations page 26, Apple Silicon Memory & Metal Limits: device limits from `mx.device_info()`, MLX's buffer cache, memory/cache/wired limits (behaviour tested on MLX 0.32.3), RSS vs physical footprint, `max_buffer_length`, command-buffer splitting (counted with smeltr) and the GPU watchdog, grounded in the LTX-2, Hunyuan3D and Matrix-Game ports.
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- LLMs, CUDA vs MLX, Frameworks: MLX was described as single-device with no distributed training or gradient checkpointing; `mx.distributed` (multi-Mac data/tensor/pipeline parallelism) and `--grad-checkpoint` exist.
 - mlx-forge was linked as `github.com/ml-explore/mlx-forge` (404) in 7 places and described as an ml-explore hub for porting and Metal kernels; it is a community conversion tool at `github.com/dgrauet/mlx-forge`. Porting Guide / Frameworks now recommend `mx.fast.metal_kernel` before a C++ extension (nanobind, not pybind11). Open Opportunities #8 and the CUDA-vs-MLX overview no longer claim MLX lacks Conv3d, causal masking or memory-efficient attention (fused SDPA measured at 0.2 GB for 16K tokens).
 - Tooling: "no MLX-native kernel profiler exists" now mentions `mx.metal.start_capture` (Xcode Metal debugger) and smeltr; per-kernel hardware counters remain the gap.
 - Audio: the Whisper diagram said the mel spectrogram has T/2 frames; it has 3000 frames per 30 s, halved to 1500 by the encoder's conv stem.

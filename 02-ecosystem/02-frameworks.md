@@ -397,7 +397,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 | Image generation | 🟢 Diffusers (canonical) | 🟡 Limited | 🟡 mlx-examples stable diffusion |
 | Video generation | 🟢 Diffusers (LTX-Video, etc.) | 🔴 None | 🔴 Early (Matrix-Game-mlx) |
 | Fine-tuning | 🟢 PEFT, Axolotl, Unsloth | 🟡 Orbax + manual | 🟡 mlx-lm LoRA |
-| Distributed training | 🟢 FSDP, DeepSpeed, NCCL | 🟢 pmap, multi-TPU | 🔴 Not supported |
+| Distributed training | 🟢 FSDP, DeepSpeed, NCCL | 🟢 pmap, multi-TPU | 🟡 `mx.distributed` across Macs (`average_gradients`, `fully_shard`) |
 | Custom kernels | 🟢 CUDA C++, Triton | 🟢 Custom XLA ops | 🟡 Metal Shading Language |
 | Debugging tools | 🟢 PyTorch profiler, Nsight | 🟡 XLA profiler | 🟡 Apple Instruments |
 
@@ -409,7 +409,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 | Compilation | `torch.compile` (optional, 2.0+) | `jax.jit` (standard) | `mx.compile()` (optional) |
 | [Kernel](../glossary.md#kernel) fusion | Via `torch.compile` or Triton | Via XLA (always) | Via `mx.compile` (opt-in) |
 | Memory efficiency | Manual with custom kernels | Good (XLA optimizes) | Good (fusion + unified memory) |
-| Multi-GPU scaling | 🟢 Linear scaling with NCCL | 🟢 pmap for TPU/GPU | 🔴 Single-device only |
+| Multi-GPU scaling | 🟢 Linear scaling with NCCL | 🟢 pmap for TPU/GPU | 🟡 Several Macs over Thunderbolt / Ethernet |
 
 ### Hardware Support
 
@@ -440,7 +440,7 @@ out = residual * mx.rsqrt(variance + eps) * weight
 |-----------|---------------|-----|-----|
 | **API maturity** | 🟢 Battle-tested, stable | 🟡 Core is stable; edges still changing | Minor -- core ops are reliable; some advanced APIs shift between releases |
 | **Model zoo / pre-trained weights** | 🟢 Tens of thousands, all architectures | 🟡 1000+ converted models | Medium -- most popular models available; obscure or new architectures need manual conversion |
-| **Distributed training** | 🟢 FSDP, DeepSpeed, Megatron, NCCL | 🔴 Not supported | Large -- MLX is single-device only; no path to multi-node |
+| **Distributed training** | 🟢 FSDP, DeepSpeed, Megatron, NCCL | 🟡 `mx.distributed`: data parallel, tensor parallel (`shard_linear`), `fully_shard`, across a few Macs | Large -- multi-node works, but at a few Macs, not cluster scale (see [Distributed MLX](../01-foundations/29-distributed-mlx.md)) |
 | **Custom ops (equivalent to Triton)** | 🟢 Triton, CUDA C++, extensive docs | 🟡 Metal Shading Language (steeper curve) | Medium -- Metal is capable but documentation is sparse and community is small |
 | **Debugging tools** | 🟢 PyTorch profiler, `torch.autograd.set_detect_anomaly` | 🟡 Instruments, `mx.metal.get_peak_memory()` | Medium -- basic debugging is fine; kernel-level profiling less mature |
 | **Mobile / edge deployment** | 🟢 PyTorch Mobile, Core ML export | 🔴 No mobile deployment path | Large -- MLX targets Mac; no iOS/Android deployment |

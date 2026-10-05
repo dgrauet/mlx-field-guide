@@ -367,11 +367,11 @@ W&B and MLflow are Python libraries and technically work with MLX, but there is 
 
 | Capability | CUDA | MLX | Gap |
 |-----------|------|-----|-----|
-| **Full pretraining** | 🟢 PyTorch + FSDP/DeepSpeed; multi-node, trillion-parameter scale | 🟡 Possible for small models on single Mac; no distributed; no gradient checkpointing at scale | Large -- MLX cannot pretrain anything beyond toy models in reasonable time |
+| **Full pretraining** | 🟢 PyTorch + FSDP/DeepSpeed; multi-node, trillion-parameter scale | 🟡 Possible for small models; distributed across a few Macs via `mx.distributed`; gradient checkpointing via `mx.checkpoint` | Large -- MLX cannot pretrain anything beyond toy models in reasonable time |
 | **LoRA fine-tuning (LLMs)** | 🟢 PEFT: full-featured, all architectures, optimized kernels via Unsloth | 🟡 mlx-lm: works well for supported architectures; fewer optimization hooks | Small for basic use; medium for edge cases (very long context, custom architectures) |
 | **QLoRA fine-tuning** | 🟢 PEFT + BitsAndBytes NF4; stable, well-documented | 🟡 mlx-lm QLoRA: works; fewer configuration options | Small -- both work; CUDA ecosystem has more tooling around it |
 | **Full-parameter fine-tuning** | 🟢 Standard with Adam + gradient checkpointing; 7B on single A100 40GB | 🟡 Works for small models; impractical beyond ~1-3B parameters on Mac | Medium -- Mac Studio 192GB can hold large models, but no gradient checkpointing, no FSDP |
-| **Distributed training** | 🟢 FSDP, DeepSpeed ZeRO, NCCL; linear scaling to thousands of GPUs | 🔴 Not supported -- single-device only | Large -- fundamental architecture gap; no path to multi-device MLX training |
+| **Distributed training** | 🟢 FSDP, DeepSpeed ZeRO, NCCL; linear scaling to thousands of GPUs | 🟡 `mx.distributed` across a few Macs: `nn.average_gradients`, tensor parallelism, `nn.fully_shard`; ring (TCP) or JACCL (RDMA over Thunderbolt 5) | Large -- works at the scale of a few Macs, far from GPU-cluster scale |
 | **Mixed precision training** | 🟢 BF16/FP16 training with FP32 optimizer states; FP8 on H100; automatic loss scaling | 🟡 BF16 training available; no FP8; no automatic loss scaler | Medium -- BF16 covers most needs; FP8 for maximum throughput is missing |
 | **Gradient accumulation** | 🟢 Standard: accumulate over N micro-batches before optimizer step | 🟡 Manual accumulation possible; not a first-class API | Small -- implementable manually; not ergonomic |
 | **Gradient checkpointing** | 🟢 `torch.utils.checkpoint`; selective policies; FSDP integration | 🟡 `mlx.nn.utils.checkpoint` exists; limited, experimental | Medium -- important for training larger models on constrained memory |
@@ -390,7 +390,7 @@ W&B and MLflow are Python libraries and technically work with MLX, but there is 
 
 ## Contribution Opportunities
 
-**Distributed training via Apple Thunderbolt/networking.** The most impactful missing feature. MLX's single-device constraint means a Mac Studio (192 GB) is the ceiling. Implementing data-parallel training across multiple Macs via NCCL-style collective communication (all-reduce, broadcast) would let users scale beyond a single device. Apple's [Metal](../glossary.md#metal) does not have a native collective communication library; this would require building one.
+**Distributed training recipes across Macs.** The collectives exist (`mx.distributed`: ring over Ethernet/Thunderbolt, JACCL over RDMA; see [Distributed MLX](../01-foundations/29-distributed-mlx.md)), and `nn.average_gradients` / `nn.fully_shard` cover data parallelism and sharded training. What's missing is tested, documented end-to-end recipes (multi-Mac LoRA and full fine-tuning in mlx-lm, checkpointing sharded optimizer state, benchmarks of scaling over Thunderbolt 5).
 
 **PyTorch DataLoader bridge with zero-copy.** Currently, the cleanest way to load data for MLX training is: PyTorch DataLoader (for multi-worker prefetch, augmentation) -> numpy arrays -> `mx.array(batch)`. The numpy conversion copies data. A first-class bridge that uses shared memory or avoids copies would make data loading faster and more ergonomic.
 

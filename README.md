@@ -40,6 +40,7 @@ Start here. These pages build on each other in order:
 26. [Apple Silicon Memory & Metal Limits](01-foundations/26-memory-metal-limits.md) -- GPU working set, MLX's cache, wired memory, buffer caps, the GPU watchdog
 27. [Custom Metal Kernels](01-foundations/27-custom-metal-kernels.md) -- mx.fast.metal_kernel: when it pays off, and its traps (grid, init_value, atomics, templates)
 28. [LoRA & Fine-Tuning in Depth](01-foundations/28-lora-finetuning.md) -- scale conventions, adapter layout, QLoRA, fusing into a quantized base, training memory
+29. [Distributed MLX](01-foundations/29-distributed-mlx.md) -- data, tensor and pipeline parallelism across Macs; backends, mlx.launch, testing on one Mac
 
 ### Pillar 2: Ecosystem
 
