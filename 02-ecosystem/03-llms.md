@@ -345,7 +345,7 @@ The key takeaway: **for 7B models, Apple Silicon is within 30-50% of an RTX 4090
 
 **Paged attention for mlx-lm.** The single most impactful contribution to the MLX LLM ecosystem. Implementing paged attention (or an equivalent block-based KV cache) in MLX would enable mlx-lm.server to handle concurrent requests without out-of-memory failures. This requires writing custom Metal kernels for block-attention and a Python-side scheduler, but the algorithmic design is well-documented in the vLLM paper.
 
-**Speculative decoding benchmarking.** Speculative decoding is in mlx-lm, but on an M2 Pro with Gemma 3 12B 4-bit it gave no speed-up (MLX 0.32.2) despite 62-74% draft acceptance (see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)). Benchmarks across chips and model sizes, and cheaper multi-token verification, would tell users when it is worth enabling.
+**Speculative decoding benchmarking.** Speculative decoding is in mlx-lm, but on an M2 Pro with Gemma 3 12B 4-bit it gave +3% at best (0% on some runs) despite 62-74% draft acceptance (see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)). Benchmarks across chips and model sizes, and cheaper multi-token verification, would tell users when it is worth enabling.
 
 **Outlines-style constrained generation.** Schema-constrained generation (JSON output, regex-constrained output) is useful for tool use and structured data extraction. A lightweight logit-masking library compatible with mlx-lm's generate loop would fill this gap without requiring a port of the full Outlines library.
 

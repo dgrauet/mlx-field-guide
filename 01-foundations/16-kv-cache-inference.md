@@ -19,7 +19,7 @@ PREFILL (reading the prompt)              DECODE (writing the answer)
   measured: 123 tok/s                       measured: 16 tok/s
 ```
 
-(Measured with `mlx-lm` 0.31.3 and MLX 0.32.2 on an M2 Pro, Gemma 3 12B 4-bit, 1,802-token prompt.) The same model processes prompt tokens ~8x faster than it produces new ones, because prefill does lots of arithmetic per byte of weights it reads, and decode does almost none.
+(Measured with `mlx-lm` 0.32.0 and MLX 0.32.3 on an M2 Pro, Gemma 3 12B 4-bit, 1,802-token prompt.) The same model processes prompt tokens ~8x faster than it produces new ones, because prefill does lots of arithmetic per byte of weights it reads, and decode does almost none.
 
 ---
 
@@ -72,7 +72,7 @@ SHRINKING THE KV CACHE
   KV quantization     store K/V in 8 or 4 bits              you (--kv-bits)
 ```
 
-**Sliding window, measured.** Gemma 3 12B is a *hybrid*: 40 of its 48 layers attend only to the last 1,024 tokens; 8 layers are global. `mlx-lm` builds the right cache per layer (40 `RotatingKVCache`, 8 `KVCache`) via the model's `make_cache()`. On a 1,930-token run the measured cache was **462 MB instead of 760 MB**, exactly the hybrid formula; at 128K tokens the difference is 8.9 GB vs 51.5 GB.
+**Sliding window, measured.** Gemma 3 12B is a *hybrid*: 40 of its 48 layers attend only to the last 1,024 tokens; 8 layers are global. `mlx-lm` builds the right cache per layer (40 `RotatingKVCache`, 8 `KVCache`) via the model's `make_cache()`. On a 1,930-token run the cache held **462 MB of keys and values instead of 760 MB**, exactly the hybrid formula (it allocates 470 MB, because the global layers grow in 256-token steps); at 128K tokens the difference is 8.9 GB vs 51.5 GB.
 
 **`--max-kv-size` is not the same thing.** For a model *without* its own `make_cache`, `mlx-lm`'s `--max-kv-size N` makes every layer a rotating cache that keeps the first 4 tokens plus the last N-4. That bounds memory for any model, but the model was never trained to lose old context, so answers that depend on the forgotten part degrade. For models *with* `make_cache` (like Gemma 3), the flag is ignored.
 
@@ -81,7 +81,7 @@ SHRINKING THE KV CACHE
 - quantization starts after `--quantized-kv-start` tokens (default 5,000), since short caches aren't worth it;
 - attention on a quantized cache isn't the fused kernel, so it materializes a `prefill_step_size × context` score matrix -- lower `--prefill-step-size` or you can lose what you saved;
 - rotating (sliding-window) caches can't be quantized yet: on Gemma 3 it raises `NotImplementedError: RotatingKVCache Quantization NYI`;
-- in `mlx_lm.server`, it disables batching.
+- in `mlx_lm.server` (where `--kv-bits` arrived in mlx-lm 0.32.0), it disables batching.
 
 ### Prompt caching: never prefill the same prefix twice
 
@@ -105,8 +105,8 @@ Measured on the same M2 Pro / Gemma 3 12B 4-bit, 128 tokens per request:
 
 ```
   concurrent requests   aggregate decode speed   per request
-          1                  16.5 tok/s             16.5
-          4                  22.5 tok/s              5.6
+          1                  16.2 tok/s             16.2
+          4                  22.4 tok/s              5.6
           8                  25.9 tok/s              3.2
 ```
 
@@ -126,12 +126,12 @@ Measured on the same setup, Gemma 3 1B 4-bit drafting for Gemma 3 12B 4-bit, 256
 
 ```
   draft    k    decode speed   tokens accepted from draft
-  none     -     16.4 tok/s          -
-  1B       2     16.3 tok/s       158/256  (62%)
-  1B       4     15.5 tok/s       190/256  (74%)
+  none     -     16.8 tok/s          -
+  1B       2     17.3 tok/s       158/256  (62%)
+  1B       4     15.8 tok/s       190/256  (74%)
 ```
 
-Acceptance is good, yet there is no speed-up at k=2 and a loss at k=4 (on MLX 0.31.1 the same run gave +3% at k=2). The reason is the batching result above: speculative decoding assumes that verifying *k+1* tokens costs about the same as generating one. On this machine and model it doesn't, and the draft model's own passes add up. Speculative decoding pays off when the big model is strongly bandwidth-bound (bigger models, higher-bandwidth chips) and the draft is much smaller. **Measure it on your hardware before relying on it.**
+Acceptance is good, yet the gain at k=2 is +3% at best (0% on some runs and versions) and k=4 is a loss. The reason is the batching result above: speculative decoding assumes that verifying *k+1* tokens costs about the same as generating one. On this machine and model it doesn't, and the draft model's own passes add up. Speculative decoding pays off when the big model is strongly bandwidth-bound (bigger models, higher-bandwidth chips) and the draft is much smaller. **Measure it on your hardware before relying on it.**
 
 ---
 
@@ -203,7 +203,7 @@ Three rules:
 
 ## Sources
 
-- Measurements on this page: `mlx-lm` 0.31.3 / MLX 0.32.2, Apple M2 Pro (32 GB), `mlx-community/gemma-3-12b-it-4bit` with `mlx-community/gemma-3-1b-it-4bit` as draft. Absolute numbers vary by chip; the ratios are the lesson.
+- Measurements on this page: `mlx-lm` 0.32.0 / MLX 0.32.3, Apple M2 Pro (32 GB), `mlx-community/gemma-3-12b-it-4bit` with `mlx-community/gemma-3-1b-it-4bit` as draft. Absolute numbers vary by chip; the ratios are the lesson.
 - `mlx-lm` source: `mlx_lm/models/cache.py` (cache classes, `make_prompt_cache`), `mlx_lm/generate.py` (`speculative_generate_step`, `BatchGenerator`), `mlx_lm/SERVER.md` (KV quantization and batching caveats): [github.com/ml-explore/mlx-lm](https://github.com/ml-explore/mlx-lm)
 - Pope, R., et al. (2022). "Efficiently Scaling Transformer Inference." Prefill vs decode, memory-bandwidth bounds, KV cache costs. [arxiv.org/abs/2211.05102](https://arxiv.org/abs/2211.05102)
 - Leviathan, Y., Kalman, M., & Matias, Y. (2023). "Fast Inference from Transformers via Speculative Decoding." [arxiv.org/abs/2211.17192](https://arxiv.org/abs/2211.17192)

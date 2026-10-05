@@ -34,7 +34,7 @@ All three expose OpenAI-compatible HTTP APIs. All three require NVIDIA GPUs.
 
 ### Server-Class Inference
 
-**`mlx_lm.server`** is the reference server. It ships with `mlx-lm`, exposes an OpenAI-compatible HTTP endpoint (chat completions, streaming, completions), and handles token streaming correctly. Current versions (0.31) do **continuous batching** (`--decode-concurrency`, `--prompt-concurrency`), keeps an LRU **prompt cache** of recent requests, and supports **speculative decoding** (`--draft-model`). It does *not* implement paged attention, and batching is disabled when a draft model or a quantized KV cache (`--kv-bits`) is used. On a single Mac, batching raises aggregate throughput much less than on a datacenter GPU (measured 1.6x at 8 requests on an M2 Pro, see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)).
+**`mlx_lm.server`** is the reference server. It ships with `mlx-lm`, exposes an OpenAI-compatible HTTP endpoint (chat completions, streaming, completions), and handles token streaming correctly. Current versions (mlx-lm 0.32) do **continuous batching** (`--decode-concurrency`, `--prompt-concurrency`), keeps an LRU **prompt cache** of recent requests, and supports **speculative decoding** (`--draft-model`). It does *not* implement paged attention, and batching is disabled when a draft model or a quantized KV cache (`--kv-bits`) is used. On a single Mac, batching raises aggregate throughput much less than on a datacenter GPU (measured 1.6x at 8 requests on an M2 Pro, see [KV Cache & Inference Optimization](../01-foundations/16-kv-cache-inference.md)).
 
 ```bash
 # Launch a server with any mlx-lm-compatible model
